@@ -26,7 +26,7 @@ const VideoButton: React.FC<VideoButtonProps> = ({
     setIsClient(true);
     
     // Memastikan bootstrap.js dimuat
-    import('bootstrap/dist/js/bootstrap.bundle.min.js');
+    // import('bootstrap/dist/js/bootstrap.bundle.min.js');
   }, []);
 
   const handleClose = () => setShowModal(false);
@@ -47,8 +47,8 @@ const VideoButton: React.FC<VideoButtonProps> = ({
       {/* Tombol Play dengan stopPropagation */}
       <button
         onClick={handleShow}
-        onMouseDown={(e) => e.stopPropagation()} // Mencegah mousedown event juga
-        onTouchStart={(e) => e.stopPropagation()} // Mencegah touchstart event
+        onMouseDown={(e: React.MouseEvent) => e.stopPropagation()} // Tambahkan tipe eksplisit
+        onTouchStart={(e: React.TouchEvent) => e.stopPropagation()} // Tambahkan tipe eksplisit
         className="video-play-button"
         style={{
           position: 'absolute',
@@ -77,7 +77,7 @@ const VideoButton: React.FC<VideoButtonProps> = ({
         size="lg" 
         centered
         contentClassName="bg-dark"
-        onMouseDown={(e) => e.stopPropagation()}
+        onMouseDown={(e: React.MouseEvent) => e.stopPropagation()} // Tambahkan tipe eksplisit
       >
         <Modal.Header closeButton closeVariant="white">
           <Modal.Title className="text-white">Video</Modal.Title>
@@ -89,13 +89,13 @@ const VideoButton: React.FC<VideoButtonProps> = ({
             autoPlay
             className="w-100"
             style={{ borderRadius: '0.3rem' }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()} // Tambahkan tipe eksplisit
           />
         </Modal.Body>
         <Modal.Footer>
           <Button 
             variant="secondary" 
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               handleClose();
             }}

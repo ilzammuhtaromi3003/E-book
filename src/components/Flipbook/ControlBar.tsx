@@ -1,4 +1,3 @@
-// components/Flipbook/ControlBar.tsx
 import React from 'react';
 import { ControlBarProps } from './types';
 
@@ -15,24 +14,21 @@ const ControlBar: React.FC<ControlBarProps> = ({
   // Format tampilan halaman
   const getFormattedDisplay = () => {
     if (pageDisplay === "Cover") {
-      return "Cover"; // Hanya menampilkan "Cover" tanpa "dari 162"
+      return "Cover";
     }
     
-    // Cek jika pageDisplay adalah nomor halaman
     if (!isNaN(Number(pageDisplay))) {
       const currentPage = Number(pageDisplay);
-      // Jika halaman ganjil, tampilkan format "X-Y"
       if (currentPage % 2 !== 0 && currentPage < totalPages) {
         return `Halaman ${currentPage}-${currentPage + 1} dari ${totalPages}`;
       }
     }
     
-    // Default untuk kasus lain
     return `Halaman ${pageDisplay} dari ${totalPages}`;
   };
   
   // Gaya untuk control bar
-  const controlBarStyle = {
+  const controlBarStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -43,25 +39,25 @@ const ControlBar: React.FC<ControlBarProps> = ({
     margin: '10px auto',
     width: '95%',
     maxWidth: '600px',
-    zIndex: 1000
+    zIndex: 1000,
   };
   
   // Gaya untuk halaman display
-  const pageDisplayStyle = {
+  const pageDisplayStyle: React.CSSProperties = {
     color: '#2563eb',
     fontWeight: '600',
-    fontSize: '16px'
+    fontSize: '16px',
   };
   
   // Gaya untuk grup tombol
-  const buttonGroupStyle = {
+  const buttonGroupStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
-    gap: '15px'
+    gap: '15px',
   };
   
   // Gaya untuk tombol
-  const buttonStyle = {
+  const buttonStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -72,23 +68,23 @@ const ControlBar: React.FC<ControlBarProps> = ({
     borderRadius: '50%',
     color: '#2563eb',
     cursor: 'pointer',
-    padding: 0
+    padding: 0,
   };
   
   // Gaya untuk tombol yang dinonaktifkan
-  const disabledButtonStyle = {
+  const disabledButtonStyle: React.CSSProperties = {
     ...buttonStyle,
     opacity: 0.5,
-    cursor: 'not-allowed'
+    cursor: 'not-allowed',
   };
   
   // Gaya untuk zoom display
-  const zoomDisplayStyle = {
+  const zoomDisplayStyle: React.CSSProperties = {
     minWidth: '60px',
-    textAlign: 'center',
+    textAlign: 'center', // Pastikan nilai ini valid
     fontWeight: '600',
     color: '#4b5563',
-    fontSize: '16px'
+    fontSize: '16px',
   };
   
   return (

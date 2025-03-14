@@ -1,7 +1,7 @@
 // components/Flipbook/Flipbook.tsx
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import HTMLFlipBook from "react-pageflip";
 import Cover from './Cover';
 import Page from './Page';
@@ -19,7 +19,8 @@ const Flipbook: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const nextPage = (e?: React.MouseEvent) => {
+  // Use useCallback to memoize these functions
+  const nextPage = useCallback((e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
       e.preventDefault();
@@ -27,9 +28,9 @@ const Flipbook: React.FC = () => {
     if (book.current) {
       book.current.pageFlip().flipNext();
     }
-  };
+  }, []);
 
-  const prevPage = (e?: React.MouseEvent) => {
+  const prevPage = useCallback((e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
       e.preventDefault();
@@ -37,7 +38,7 @@ const Flipbook: React.FC = () => {
     if (book.current) {
       book.current.pageFlip().flipPrev();
     }
-  };
+  }, []);
 
   const onPageChange = (e: any) => {
     setCurrentPage(e.data);
@@ -45,21 +46,21 @@ const Flipbook: React.FC = () => {
     setIsPanorama(e.data === 30);
   };
 
-  // Zoom handlers
-  const handleZoomIn = () => {
+  // Zoom handlers with useCallback
+  const handleZoomIn = useCallback(() => {
     if (zoom < 2) {
       setZoom(prev => Math.min(prev + 0.1, 2));
     }
-  };
+  }, [zoom]);
 
-  const handleZoomOut = () => {
+  const handleZoomOut = useCallback(() => {
     if (zoom > 0.5) {
       setZoom(prev => Math.max(prev - 0.1, 0.5));
     }
-  };
+  }, [zoom]);
 
   // Download handler
-  const handleDownload = () => {
+  const handleDownload = useCallback(() => {
     try {
       // Membuka jendela baru untuk unduhan
       const link = document.createElement('a');
@@ -72,10 +73,10 @@ const Flipbook: React.FC = () => {
       console.error('Error downloading PDF:', error);
       alert('Gagal mengunduh dokumen. Pastikan file PDF tersedia di server.');
     }
-  };
+  }, []);
 
   // Fullscreen handler
-  const toggleFullscreen = () => {
+  const toggleFullscreen = useCallback(() => {
     try {
       if (!document.fullscreenElement) {
         // Masuk ke mode fullscreen
@@ -93,7 +94,7 @@ const Flipbook: React.FC = () => {
     } catch (error) {
       console.error('Error toggling fullscreen:', error);
     }
-  };
+  }, []);
 
   // Keyboard event listeners
   useEffect(() => {
@@ -124,7 +125,7 @@ const Flipbook: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
-  }, [isPanorama]);
+  }, [isPanorama, prevPage, nextPage, handleZoomIn, handleZoomOut, toggleFullscreen]);
 
   // Function untuk render halaman
   const renderPages = () => {
@@ -191,11 +192,11 @@ const Flipbook: React.FC = () => {
     
     // Untuk halaman setelah panorama (mereka sekarang 1 kurang dari file image)
     if (currentPage >= 32) {
-      return (currentPage - 1) + 6; // Kompensasi untuk 7 halaman digabung, dikurangi 1 untuk cover
+      return `${(currentPage - 1) + 6}`; // Konversi ke string untuk tipe konsisten
     }
     
     // Halaman normal sebelum panorama (dikurangi 1 karena cover tidak dihitung)
-    return currentPage;
+    return `${currentPage}`;
   };
 
   return (
