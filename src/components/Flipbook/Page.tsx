@@ -82,8 +82,8 @@ const Page: React.FC<PageProps> = ({
           alt="Orang GIF"
           style={{
             position: 'absolute',
-            top: '16.8%',
-            left: '13.8%',
+            top: '15.5%',
+            left: '13.9%',
             width: '100px',
             height: 'auto',
             zIndex: 10,

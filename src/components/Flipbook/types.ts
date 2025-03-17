@@ -21,12 +21,17 @@ export interface NavigationButtonsProps {
 }
 
 export interface ControlBarProps {
-  pageDisplay: string;
-  totalPages: number;
   zoom: number;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onDownload: () => void;
   onToggleFullscreen: () => void;
+  onGoHome: () => void;
   isFullscreen: boolean;
+}
+
+export interface NavbarProps {
+  pageDisplay: string;
+  totalPages: number;
+  onGoToPage: (page: number) => void;
 }

@@ -1,52 +1,31 @@
+"use client";
+
+// components/Flipbook/ControlBar.tsx
 import React from 'react';
 import { ControlBarProps } from './types';
 
 const ControlBar: React.FC<ControlBarProps> = ({
-  pageDisplay,
-  totalPages,
   zoom,
   onZoomIn,
   onZoomOut,
   onDownload,
   onToggleFullscreen,
+  onGoHome,
   isFullscreen
 }) => {
-  // Format tampilan halaman
-  const getFormattedDisplay = () => {
-    if (pageDisplay === "Cover") {
-      return "Cover";
-    }
-    
-    if (!isNaN(Number(pageDisplay))) {
-      const currentPage = Number(pageDisplay);
-      if (currentPage % 2 !== 0 && currentPage < totalPages) {
-        return `Halaman ${currentPage}-${currentPage + 1} dari ${totalPages}`;
-      }
-    }
-    
-    return `Halaman ${pageDisplay} dari ${totalPages}`;
-  };
-  
   // Gaya untuk control bar
   const controlBarStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     padding: '10px 20px',
-    backgroundColor: 'white',
+    // backgroundColor: 'white',
     borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    // boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
     margin: '10px auto',
     width: '95%',
     maxWidth: '600px',
     zIndex: 1000,
-  };
-  
-  // Gaya untuk halaman display
-  const pageDisplayStyle: React.CSSProperties = {
-    color: '#2563eb',
-    fontWeight: '600',
-    fontSize: '16px',
   };
   
   // Gaya untuk grup tombol
@@ -81,7 +60,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
   // Gaya untuk zoom display
   const zoomDisplayStyle: React.CSSProperties = {
     minWidth: '60px',
-    textAlign: 'center', // Pastikan nilai ini valid
+    textAlign: 'center', 
     fontWeight: '600',
     color: '#4b5563',
     fontSize: '16px',
@@ -89,13 +68,20 @@ const ControlBar: React.FC<ControlBarProps> = ({
   
   return (
     <div style={controlBarStyle}>
-      {/* Page counter */}
-      <div style={pageDisplayStyle}>
-        {getFormattedDisplay()}
-      </div>
-      
       {/* Control buttons */}
       <div style={buttonGroupStyle}>
+        {/* Home button */}
+        <button
+          onClick={onGoHome}
+          style={buttonStyle}
+          aria-label="Go to Cover"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M9 22V12h6v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+        
         {/* Zoom out button */}
         <button
           onClick={onZoomOut}

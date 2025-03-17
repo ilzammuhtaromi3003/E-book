@@ -1,12 +1,13 @@
-// components/Flipbook/Flipbook.tsx
 "use client";
 
+// components/Flipbook/Flipbook.tsx
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import HTMLFlipBook from "react-pageflip";
 import Cover from './Cover';
 import Page from './Page';
 import NavigationButtons from './NavigationButtons';
 import ControlBar from './ControlBar';
+import Navbar from './Navbar';
 import { PanoramaLeftPage, PanoramaRightPage } from './PanoramaPages';
 import PanoramaSlider from './PanoramaSlider';
 import { panoramaState } from './PanoramaState';
@@ -42,6 +43,36 @@ const Flipbook: React.FC = () => {
     }
     if (book.current) {
       book.current.pageFlip().flipPrev();
+    }
+  }, []);
+
+  // Function to go to specific page
+  const goToPage = useCallback((pageNumber: number) => {
+    if (book.current) {
+      // Convert from actual page number to flip index (0-based)
+      // Cover is page 0, so if user enters page 1, we should go to index 0
+      // For other pages, subtract 1 to get the index
+      let targetIndex = pageNumber === 1 ? 0 : pageNumber - 1;
+      
+      // Handle the special case for panorama pages
+      if (pageNumber >= 32 && pageNumber <= 38) {
+        // All panorama pages (32-38) map to indices 31-32
+        targetIndex = 31;
+        // Set panorama scroll position based on which page is requested
+        panoramaState.setScrollValue((pageNumber - 32) * 100);
+      } else if (pageNumber > 38) {
+        // Pages after panorama need to be adjusted (skipping indices 32-38)
+        targetIndex = pageNumber - 7;
+      }
+      
+      book.current.pageFlip().turnToPage(targetIndex);
+    }
+  }, []);
+
+  // Function to go back to cover
+  const goToHome = useCallback(() => {
+    if (book.current) {
+      book.current.pageFlip().turnToPage(0);
     }
   }, []);
 
@@ -137,6 +168,8 @@ const Flipbook: React.FC = () => {
         handleZoomOut();
       } else if (e.key === 'f' || e.key === 'F') {
         toggleFullscreen();
+      } else if (e.key === 'h' || e.key === 'H') {
+        goToHome();
       }
     };
     
@@ -153,7 +186,7 @@ const Flipbook: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
-  }, [prevPage, nextPage, handleZoomIn, handleZoomOut, toggleFullscreen, isPanorama]);
+  }, [prevPage, nextPage, handleZoomIn, handleZoomOut, toggleFullscreen, isPanorama, goToHome]);
 
   // Function untuk render halaman
   const renderPages = () => {
@@ -202,7 +235,7 @@ const Flipbook: React.FC = () => {
     
     // Untuk spread halaman panorama khusus (halaman 31-32)
     if (currentPage === 31 || currentPage === 32) {
-      return "31-37";
+      return "31 - 37";
     }
     
     // Untuk halaman setelah panorama
@@ -219,8 +252,15 @@ const Flipbook: React.FC = () => {
       ref={flipbookContainerRef}
       className={`flipbook-container ${isFullscreen ? 'flipbook-fullscreen' : 'flex flex-col items-center justify-center w-full h-screen'} overflow-hidden bg-gray-100`}
     >
+      {/* Navbar di bagian atas */}
+      <Navbar 
+        pageDisplay={getDisplayPageNumber()} 
+        totalPages={totalPages}
+        onGoToPage={goToPage}
+      />
+      
       <div 
-        className="relative flex flex-col items-center justify-center w-full"
+        className="relative flex flex-col items-center justify-center w-full flex-grow"
         style={{ transform: `scale(${zoom})`, transition: 'transform 0.3s ease' }}
       >
         <div className="relative">
@@ -236,7 +276,7 @@ const Flipbook: React.FC = () => {
           <div className="relative book-container">
             <HTMLFlipBook
               width={600}
-              height={733}
+              height={700}
               size="fixed"
               minWidth={350}
               maxWidth={1000}
@@ -287,13 +327,12 @@ const Flipbook: React.FC = () => {
       
       {/* Control Bar */}
       <ControlBar 
-        pageDisplay={getDisplayPageNumber()}
-        totalPages={totalPages}
         zoom={zoom}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         onDownload={handleDownload}
         onToggleFullscreen={toggleFullscreen}
+        onGoHome={goToHome}
         isFullscreen={isFullscreen}
       />
     </div>

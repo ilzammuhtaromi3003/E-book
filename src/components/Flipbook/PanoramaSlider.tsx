@@ -36,12 +36,12 @@ const PanoramaSlider: React.FC<PanoramaSliderProps> = ({ scrollValue, setScrollV
         bottom: '-20px',
         left: '50%',
         transform: 'translateX(-50%)',
-        width: '90%',
-        maxWidth: '550px',
-        background: 'rgba(255, 255, 255, 0.8)',
+        width: '80%',
+        maxWidth: '450px',
+        // background: 'rgba(255, 255, 255, 0.8)',
         borderRadius: '30px',
         padding: '5px 15px',
-        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+        // boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
         zIndex: 1000
       }}
     >

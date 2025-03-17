@@ -27,7 +27,7 @@ export const PanoramaLeftPage: React.FC<PanoramaPagesProps> = ({ scrollValue }) 
           />
           
           {/* Tombol video */}
-          <div style={{ position: 'absolute', top: '20%', left: '30%', zIndex: 10 }}>
+          <div style={{ position: 'absolute', top: '20%', left: '10%', zIndex: 10 }}>
             <VideoButton 
               videoSrc="/video1.mp4" 
               position={{ top: 0, left: 0 }} 

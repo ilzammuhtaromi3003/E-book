@@ -1,3 +1,5 @@
+"use client";
+
 // components/Flipbook/NavigationButtons.tsx
 import React from 'react';
 import { NavigationButtonsProps } from './types';
@@ -15,7 +17,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
       {/* Tombol navigasi kiri */}
       <button
         onClick={onPrev}
-        className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 navigation-btn-left"
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 navigation-btn-left"
         disabled={currentPage === 0}
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.8)',
@@ -36,13 +38,11 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         onMouseEnter={(e) => {
           if (currentPage !== 0) {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
-            e.currentTarget.style.transform = 'translateY(-50%) scale(1.05)';
             e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
           }
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-          e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
           e.currentTarget.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.15)';
         }}
       >
@@ -52,7 +52,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
       {/* Tombol navigasi kanan */}
       <button
         onClick={onNext}
-        className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 navigation-btn-right"
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 navigation-btn-right"
         disabled={currentPage === totalPages - 1}
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.8)',
@@ -73,13 +73,11 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         onMouseEnter={(e) => {
           if (currentPage !== totalPages - 1) {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
-            e.currentTarget.style.transform = 'translateY(-50%) scale(1.05)';
             e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
           }
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-          e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
           e.currentTarget.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.15)';
         }}
       >
