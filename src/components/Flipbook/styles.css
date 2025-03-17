@@ -106,5 +106,113 @@
     text-align: center !important;
   }
 
+  /* Tambahkan ke styles.css */
+
+/* Menghilangkan pembatas di tengah buku */
+.stf__wrapper::after,
+.panorama-flipbook .stf__wrapper::after {
+  display: none !important;
+}
+
+/* Styling untuk range slider */
+.panorama-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%; 
+  background: #3b82f6;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.panorama-range-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Hover state untuk thumb */
+.panorama-range-slider::-webkit-slider-thumb:hover {
+  background: #2563eb;
+  transform: scale(1.1);
+}
+
+.panorama-range-slider::-moz-range-thumb:hover {
+  background: #2563eb;
+  transform: scale(1.1);
+}
+
+/* Active state untuk thumb */
+.panorama-range-slider::-webkit-slider-thumb:active {
+  background: #1d4ed8;
+  transform: scale(1.2);
+}
+
+.panorama-range-slider::-moz-range-thumb:active {
+  background: #1d4ed8;
+  transform: scale(1.2);
+}
+
+/* Animation for slider container */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px) translateX(-50%); }
+  to { opacity: 1; transform: translateY(0) translateX(-50%); }
+}
+
+.panorama-slider-container {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Perbaikan pointer-events untuk memastikan interaksi berfungsi dengan benar */
+.page {
+  pointer-events: none !important;
+}
+
+.page > div {
+  pointer-events: auto !important;
+}
+
+/* Styling untuk tombol navigasi */
+.navigation-btn-left, .navigation-btn-right {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+.navigation-btn-left {
+  left: 10px;
+}
+
+.navigation-btn-right {
+  right: 10px;
+}
+
+.navigation-btn-left:hover, .navigation-btn-right:hover {
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  transform: translateY(-50%) scale(1.05);
+}
+
+/* Button hover effects */
+.slider-btn-left:hover, .slider-btn-right:hover {
+  color: #3b82f6 !important;
+  transform: scale(1.1);
+}
+
+.slider-btn-left:active, .slider-btn-right:active {
+  transform: scale(0.95);
+}
+
+  
 
   
