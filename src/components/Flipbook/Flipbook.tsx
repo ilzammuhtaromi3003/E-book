@@ -7,17 +7,15 @@ import Cover from './Cover';
 import Page from './Page';
 import NavigationButtons from './NavigationButtons';
 import ControlBar from './ControlBar';
-import VideoButton from '../VideoButton';
+import { PanoramaLeftPage, PanoramaRightPage } from './PanoramaPages';
+import PanoramaSlider from './PanoramaSlider';
+import { panoramaState } from './PanoramaState';
 import './styles.css';
-
-// Nilai scroll global
-let panoramaScrollValue = 0;
 
 const Flipbook: React.FC = () => {
   const totalPages = 162; // Total halaman yang sebenarnya
   const book = useRef<any>(null);
   const flipbookContainerRef = useRef<HTMLDivElement>(null);
-  const bookContainerRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [zoom, setZoom] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -26,7 +24,7 @@ const Flipbook: React.FC = () => {
   // Deteksi apakah ini halaman panorama
   const isPanorama = currentPage === 31 || currentPage === 32;
 
-  // Use useCallback to memoize these functions
+  // Navigation handlers
   const nextPage = useCallback((e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
@@ -51,106 +49,24 @@ const Flipbook: React.FC = () => {
     setCurrentPage(e.data);
     // Reset scroll position saat halaman berpindah dari panorama
     if (e.data !== 31 && e.data !== 32) {
+      panoramaState.reset();
       setScrollValue(0);
-      panoramaScrollValue = 0;
     }
   };
 
-  // Handler untuk slider
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = parseInt(e.target.value);
-    setScrollValue(newValue);
-    panoramaScrollValue = newValue;
-
-    // Update semua halaman panorama
-    const leftPano = document.getElementById('panorama-img-left');
-    const rightPano = document.getElementById('panorama-img-right');
-    
-    if (leftPano) {
-      leftPano.style.transform = `translateX(-${newValue}px)`;
-    }
-    
-    if (rightPano) {
-      rightPano.style.transform = `translateX(-${newValue}px)`;
-    }
-  };
-
-  // Fungsi untuk scroll kiri
-  const scrollLeft = () => {
-    const newValue = Math.max(0, scrollValue - 200);
-    setScrollValue(newValue);
-    panoramaScrollValue = newValue;
-    
-    // Update slider
-    const slider = document.getElementById('panorama-slider') as HTMLInputElement;
-    if (slider) {
-      slider.value = newValue.toString();
-    }
-    
-    // Update gambar
-    const leftPano = document.getElementById('panorama-img-left');
-    const rightPano = document.getElementById('panorama-img-right');
-    
-    if (leftPano) {
-      leftPano.style.transform = `translateX(-${newValue}px)`;
-    }
-    
-    if (rightPano) {
-      rightPano.style.transform = `translateX(-${newValue}px)`;
-    }
-  };
-
-  // Fungsi untuk scroll kanan
-  const scrollRight = () => {
-    const newValue = Math.min(1000, scrollValue + 200);
-    setScrollValue(newValue);
-    panoramaScrollValue = newValue;
-    
-    // Update slider
-    const slider = document.getElementById('panorama-slider') as HTMLInputElement;
-    if (slider) {
-      slider.value = newValue.toString();
-    }
-    
-    // Update gambar
-    const leftPano = document.getElementById('panorama-img-left');
-    const rightPano = document.getElementById('panorama-img-right');
-    
-    if (leftPano) {
-      leftPano.style.transform = `translateX(-${newValue}px)`;
-    }
-    
-    if (rightPano) {
-      rightPano.style.transform = `translateX(-${newValue}px)`;
-    }
-  };
-
-  // Sync scroll value saat masuk ke halaman panorama
+  // Sync scroll value dengan state panorama saat masuk ke halaman panorama
   useEffect(() => {
     if (isPanorama) {
-      setScrollValue(panoramaScrollValue);
-      
-      // Update slider
-      const slider = document.getElementById('panorama-slider') as HTMLInputElement;
-      if (slider) {
-        slider.value = panoramaScrollValue.toString();
-      }
-      
-      // Update gambar
-      const leftPano = document.getElementById('panorama-img-left');
-      const rightPano = document.getElementById('panorama-img-right');
-      
-      if (leftPano) {
-        leftPano.style.transform = `translateX(-${panoramaScrollValue}px)`;
-      }
-      
-      if (rightPano) {
-        rightPano.style.transform = `translateX(-${panoramaScrollValue}px)`;
-      }
+      setScrollValue(panoramaState.scrollValue);
     }
   }, [isPanorama]);
 
-  // Zoom handlers with useCallback
+  // Handler untuk update scroll value
+  const handleScrollValueChange = useCallback((value: number) => {
+    setScrollValue(value);
+  }, []);
+
+  // Zoom handlers
   const handleZoomIn = useCallback(() => {
     if (zoom < 2) {
       setZoom(prev => Math.min(prev + 0.1, 2));
@@ -205,15 +121,13 @@ const Flipbook: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') {
         if (isPanorama) {
-          // Dalam mode panorama, tombol kiri geser panorama
-          scrollLeft();
+          panoramaState.scrollLeft();
         } else {
           prevPage();
         }
       } else if (e.key === 'ArrowRight') {
         if (isPanorama) {
-          // Dalam mode panorama, tombol kanan geser panorama
-          scrollRight();
+          panoramaState.scrollRight();
         } else {
           nextPage();
         }
@@ -239,7 +153,7 @@ const Flipbook: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
-  }, [prevPage, nextPage, handleZoomIn, handleZoomOut, toggleFullscreen, isPanorama, scrollLeft, scrollRight]);
+  }, [prevPage, nextPage, handleZoomIn, handleZoomOut, toggleFullscreen, isPanorama]);
 
   // Function untuk render halaman
   const renderPages = () => {
@@ -257,54 +171,13 @@ const Flipbook: React.FC = () => {
     // Halaman panorama (32-33)
     pages.push(
       <div key="panorama-left" className="page">
-        <div className="w-full h-full flex items-center justify-center bg-white relative">
-          <div className="w-full h-full overflow-hidden">
-            <div 
-              id="panorama-img-left"
-              className="h-full relative inline-block"
-              style={{ transform: `translateX(-${scrollValue}px)` }}
-            >
-              <img
-                src="/tinggi/page_Page_032-038.jpg"
-                alt="Panorama Page Left"
-                className="h-full w-auto max-w-none"
-                style={{ objectFit: 'contain' }}
-              />
-              
-              {/* Tombol video */}
-              <div style={{ position: 'absolute', top: '20%', left: '10%', zIndex: 10 }}>
-                <VideoButton 
-                  videoSrc="/video1.mp4" 
-                  position={{ top: 0, left: 0 }} 
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+        <PanoramaLeftPage scrollValue={scrollValue} />
       </div>
     );
     
     pages.push(
       <div key="panorama-right" className="page">
-        <div className="w-full h-full flex items-center justify-center bg-white relative">
-          <div className="w-full h-full overflow-hidden">
-            <div 
-              id="panorama-img-right"
-              className="h-full relative inline-block"
-              style={{ 
-                transform: `translateX(-${scrollValue}px)`,
-                marginLeft: '-100%'
-              }}
-            >
-              <img
-                src="/tinggi/page_Page_032-038.jpg"
-                alt="Panorama Page Right"
-                className="h-full w-auto max-w-none"
-                style={{ objectFit: 'contain' }}
-              />
-            </div>
-          </div>
-        </div>
+        <PanoramaRightPage scrollValue={scrollValue} />
       </div>
     );
     
@@ -350,7 +223,7 @@ const Flipbook: React.FC = () => {
         className="relative flex flex-col items-center justify-center w-full"
         style={{ transform: `scale(${zoom})`, transition: 'transform 0.3s ease' }}
       >
-        <div className="relative" ref={bookContainerRef}>
+        <div className="relative">
           <NavigationButtons 
             currentPage={currentPage}
             totalPages={renderPages().length}
@@ -404,85 +277,10 @@ const Flipbook: React.FC = () => {
           
           {/* Slider untuk panorama - hanya muncul di halaman panorama */}
           {isPanorama && (
-            <div 
-              className="panorama-slider-container" 
-              style={{
-                position: 'absolute',
-                bottom: '-20px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: '90%',
-                maxWidth: '550px',
-                background: 'rgba(255, 255, 255, 0.8)',
-                borderRadius: '30px',
-                padding: '2px 10px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-                zIndex: 1000
-              }}
-            >
-              {/* Tombol kiri */}
-              <button 
-                onClick={scrollLeft}
-                className="slider-btn-left"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#666',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '0',
-                  width: '28px',
-                  height: '28px'
-                }}
-              >
-                ◀
-              </button>
-              
-              {/* Slider */}
-              <input
-                id="panorama-slider"
-                type="range"
-                min="0"
-                max="1000"
-                step="10"
-                value={scrollValue}
-                onChange={handleSliderChange}
-                className="panorama-range-slider"
-                style={{
-                  flex: '1',
-                  height: '6px',
-                  appearance: 'none',
-                  borderRadius: '3px',
-                  background: '#e2e8f0',
-                  outline: 'none'
-                }}
-              />
-              
-              {/* Tombol kanan */}
-              <button 
-                onClick={scrollRight}
-                className="slider-btn-right"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#666',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '0',
-                  width: '28px',
-                  height: '28px'
-                }}
-              >
-                ▶
-              </button>
-            </div>
+            <PanoramaSlider 
+              scrollValue={scrollValue} 
+              setScrollValue={handleScrollValueChange} 
+            />
           )}
         </div>
       </div>

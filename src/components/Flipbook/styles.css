@@ -106,34 +106,42 @@
     text-align: center !important;
   }
 
-  /* Tambahkan ke styles.css */
+  
 
-/* Menghilangkan pembatas di tengah buku */
-.stf__wrapper::after,
-.panorama-flipbook .stf__wrapper::after {
-  display: none !important;
-}
+  
+/* Tambahkan ke styles.css */
 
 /* Styling untuk range slider */
+.panorama-range-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 5px;  
+  background: #e2e8f0;
+  outline: none;
+}
+
+/* Styling untuk thumb (bagian yang bisa digeser) - WebKit browsers (Chrome, Safari) */
 .panorama-range-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%; 
   background: #3b82f6;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: all 0.2s;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
+/* Styling untuk thumb - Firefox */
 .panorama-range-slider::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #3b82f6;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: all 0.2s;
   border: none;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
@@ -142,22 +150,26 @@
 .panorama-range-slider::-webkit-slider-thumb:hover {
   background: #2563eb;
   transform: scale(1.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 .panorama-range-slider::-moz-range-thumb:hover {
   background: #2563eb;
   transform: scale(1.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 /* Active state untuk thumb */
 .panorama-range-slider::-webkit-slider-thumb:active {
   background: #1d4ed8;
   transform: scale(1.2);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.4);
 }
 
 .panorama-range-slider::-moz-range-thumb:active {
   background: #1d4ed8;
   transform: scale(1.2);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.4);
 }
 
 /* Animation for slider container */
@@ -170,49 +182,41 @@
   animation: fadeIn 0.3s ease-out forwards;
 }
 
-/* Perbaikan pointer-events untuk memastikan interaksi berfungsi dengan benar */
-.page {
-  pointer-events: none !important;
+/* Styling untuk track - WebKit browsers */
+.panorama-range-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+  border-radius: 5px;
+  background: #e2e8f0;
 }
 
-.page > div {
-  pointer-events: auto !important;
+/* Styling untuk track - Firefox */
+.panorama-range-slider::-moz-range-track {
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+  border-radius: 5px;
+  background: #e2e8f0;
 }
 
-/* Styling untuk tombol navigasi */
-.navigation-btn-left, .navigation-btn-right {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 50;
-  border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  transition: all 0.2s ease;
+/* Styling untuk track - IE/Edge */
+.panorama-range-slider::-ms-track {
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
 }
 
-.navigation-btn-left {
-  left: 10px;
+.panorama-range-slider::-ms-fill-lower {
+  background: #3b82f6;
+  border-radius: 5px;
 }
 
-.navigation-btn-right {
-  right: 10px;
+.panorama-range-slider::-ms-fill-upper {
+  background: #e2e8f0;
+  border-radius: 5px;
 }
-
-.navigation-btn-left:hover, .navigation-btn-right:hover {
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-  transform: translateY(-50%) scale(1.05);
-}
-
-/* Button hover effects */
-.slider-btn-left:hover, .slider-btn-right:hover {
-  color: #3b82f6 !important;
-  transform: scale(1.1);
-}
-
-.slider-btn-left:active, .slider-btn-right:active {
-  transform: scale(0.95);
-}
-
-  
-
   
