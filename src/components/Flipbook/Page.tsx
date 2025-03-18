@@ -1,32 +1,17 @@
+"use client";
+
 // components/Flipbook/Page.tsx
 import React from 'react';
 import { PageProps } from './types';
 import VideoButton from '../VideoButton';
+import { panoramaState } from './PanoramaState';
 
-// Variabel global untuk menyimpan dan mengakses posisi scroll
-export const panoramaState = {
-  scrollPosition: 0,
-  setScrollPosition: (position: number) => {
-    panoramaState.scrollPosition = position;
-    if (panoramaState.onScroll) {
-      panoramaState.onScroll(position);
-    }
-  },
-  onScroll: null as ((position: number) => void) | null,
-  registerScrollHandler: (handler: (position: number) => void) => {
-    panoramaState.onScroll = handler;
-    return () => {
-      panoramaState.onScroll = null;
-    };
-  }
-};
-
-const Page: React.FC<PageProps> = ({ 
+const Page = ({ 
   pageNumber, 
   showVideoButton = false, 
   isPanoramaLeft = false, 
-  isPanoramaRight = false 
-}) => {
+  isPanoramaRight = false
+}: PageProps) => {
   // Jika ini halaman panorama kiri atau kanan
   if (isPanoramaLeft || isPanoramaRight) {
     return (
@@ -36,7 +21,7 @@ const Page: React.FC<PageProps> = ({
           <div 
             className="h-full relative" 
             style={{ 
-              transform: `translateX(-${isPanoramaLeft ? 0 : 100}%) translateX(-${panoramaState.scrollPosition}px)`,
+              transform: `translateX(-${isPanoramaLeft ? 0 : 100}%) translateX(-${panoramaState.scrollValue}px)`,
               transition: 'transform 0.1s ease-out'
             }}
           >
@@ -54,7 +39,7 @@ const Page: React.FC<PageProps> = ({
               <div style={{ position: 'absolute', top: '20%', left: '30%', zIndex: 10 }}>
                 <VideoButton 
                   videoSrc="/video1.mp4" 
-                  position={{ top: 0, left: 0 }} 
+                  position={{ top: 0, left: 0 }}
                 />
               </div>
             )}
@@ -95,7 +80,7 @@ const Page: React.FC<PageProps> = ({
       {showVideoButton && !isPanoramaLeft && !isPanoramaRight && (
         <VideoButton 
           videoSrc="/video1.mp4" 
-          position={{ top: '20%', left: '80%' }} 
+          position={{ top: '20%', left: '80%' }}
         />
       )}
     </div>

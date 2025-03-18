@@ -312,3 +312,37 @@
 .panorama-flipbook .stf__wrapper::after {
   display: none !important;
 }
+
+/* ============ PANORAMA IMPROVEMENTS ============ */
+/* Pergerakan halaman panorama yang lebih smooth */
+#panorama-img-left,
+#panorama-img-right {
+  transition: transform 1.2s cubic-bezier(0.1, 0.4, 0.2, 1);
+  will-change: transform;
+}
+
+/* ============ TOOLTIP STYLING ============ */
+/* Tambahkan kode berikut ke styles.css */
+
+/* Tooltip yang langsung berada pada posisi yang tepat tanpa animasi bergerak */
+.blue-tooltip {
+  background: #4a89dc !important;
+  color: white !important;
+  font-size: 13px !important;
+  letter-spacing: 0.5px !important;
+  font-weight: 600 !important;
+  /* Hapus animasi yang menggeser posisi */
+  opacity: 1 !important;
+}
+
+/* Hapus animasi bergerak dari tooltip */
+@keyframes tooltipFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Styling untuk thumb slider yang lebih akurat */
+.panorama-range-slider::-webkit-slider-thumb {
+  position: relative;
+  z-index: 10;
+}

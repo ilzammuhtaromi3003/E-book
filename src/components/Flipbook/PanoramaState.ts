@@ -30,10 +30,14 @@ export const panoramaState = {
     
     if (leftPano) {
       leftPano.style.transform = `translateX(-${value}px)`;
+      // Transisi yang lebih lambat dan lebih halus
+      leftPano.style.transition = 'transform 1.2s cubic-bezier(0.1, 0.4, 0.2, 1)';
     }
     
     if (rightPano) {
       rightPano.style.transform = `translateX(-${value}px)`;
+      // Transisi yang lebih lambat dan lebih halus
+      rightPano.style.transition = 'transform 1.2s cubic-bezier(0.1, 0.4, 0.2, 1)';
     }
     
     // Notify all callbacks about the change
@@ -51,7 +55,38 @@ export const panoramaState = {
   },
   
   reset: () => {
+    // Reset scroll ke 0
     panoramaState.scrollValue = 0;
-    panoramaState.setScrollValue(0);
+    
+    // Update semua elemen panorama dengan hard reset
+    const leftPano = document.getElementById('panorama-img-left');
+    const rightPano = document.getElementById('panorama-img-right');
+    
+    if (leftPano) {
+      // Hapus transisi untuk reset instan
+      leftPano.style.transition = 'none';
+      leftPano.style.transform = 'translateX(0px)';
+      // Force reflow
+      void leftPano.offsetWidth;
+      // Kembalikan transisi
+      setTimeout(() => {
+        leftPano.style.transition = 'transform 1.2s cubic-bezier(0.1, 0.4, 0.2, 1)';
+      }, 50);
+    }
+    
+    if (rightPano) {
+      // Hapus transisi untuk reset instan
+      rightPano.style.transition = 'none';
+      rightPano.style.transform = 'translateX(0px)';
+      // Force reflow
+      void rightPano.offsetWidth;
+      // Kembalikan transisi
+      setTimeout(() => {
+        rightPano.style.transition = 'transform 1.2s cubic-bezier(0.1, 0.4, 0.2, 1)';
+      }, 50);
+    }
+    
+    // Notify all callbacks
+    panoramaState.notifyCallbacks();
   }
 };

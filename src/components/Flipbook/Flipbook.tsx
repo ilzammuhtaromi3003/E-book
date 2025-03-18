@@ -46,7 +46,7 @@ const Flipbook: React.FC = () => {
     }
   }, []);
 
-  // Function to go to specific page
+  // Function to go to specific page - versi sederhana dengan animasi default
   const goToPage = useCallback((pageNumber: number) => {
     if (book.current) {
       // Convert from actual page number to flip index (0-based)
@@ -58,13 +58,14 @@ const Flipbook: React.FC = () => {
       if (pageNumber >= 32 && pageNumber <= 38) {
         // All panorama pages (32-38) map to indices 31-32
         targetIndex = 31;
-        // Set panorama scroll position based on which page is requested
-        panoramaState.setScrollValue((pageNumber - 32) * 100);
+        // Reset ke paling kiri saat masuk ke halaman panorama
+        panoramaState.setScrollValue(0);
       } else if (pageNumber > 38) {
         // Pages after panorama need to be adjusted (skipping indices 32-38)
         targetIndex = pageNumber - 7;
       }
       
+      // Pindah ke halaman yang dituju menggunakan animasi default dari react-pageflip
       book.current.pageFlip().turnToPage(targetIndex);
     }
   }, []);
@@ -76,10 +77,16 @@ const Flipbook: React.FC = () => {
     }
   }, []);
 
+  // Pada onPageChange, tambahkan reset untuk panorama
   const onPageChange = (e: any) => {
     setCurrentPage(e.data);
-    // Reset scroll position saat halaman berpindah dari panorama
+    
+    // Reset scroll position saat halaman berpindah dari atau ke panorama
     if (e.data !== 31 && e.data !== 32) {
+      panoramaState.reset();
+      setScrollValue(0);
+    } else if (e.data === 31 || e.data === 32) {
+      // Selalu mulai dari kiri saat masuk ke halaman panorama
       panoramaState.reset();
       setScrollValue(0);
     }
@@ -89,6 +96,17 @@ const Flipbook: React.FC = () => {
   useEffect(() => {
     if (isPanorama) {
       setScrollValue(panoramaState.scrollValue);
+    }
+  }, [isPanorama]);
+
+  // Ketika masuk ke halaman panorama, pastikan selalu mulai dari kiri
+  useEffect(() => {
+    if (isPanorama) {
+      // Tunda sedikit untuk memastikan render selesai
+      setTimeout(() => {
+        panoramaState.reset();
+        setScrollValue(0);
+      }, 50);
     }
   }, [isPanorama]);
 

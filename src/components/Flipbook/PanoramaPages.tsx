@@ -17,7 +17,10 @@ export const PanoramaLeftPage: React.FC<PanoramaPagesProps> = ({ scrollValue }) 
         <div 
           id="panorama-img-left"
           className="h-full relative inline-block"
-          style={{ transform: `translateX(-${scrollValue}px)` }}
+          style={{ 
+            transform: `translateX(-${scrollValue}px)`,
+            transition: 'transform 1.2s cubic-bezier(0.1, 0.4, 0.2, 1)'
+          }}
         >
           <img
             src="/tinggi/page_Page_032-038.jpg"
@@ -49,6 +52,7 @@ export const PanoramaRightPage: React.FC<PanoramaPagesProps> = ({ scrollValue })
           className="h-full relative inline-block"
           style={{ 
             transform: `translateX(-${scrollValue}px)`,
+            transition: 'transform 1.2s cubic-bezier(0.1, 0.4, 0.2, 1)',
             marginLeft: '-100%'
           }}
         >
