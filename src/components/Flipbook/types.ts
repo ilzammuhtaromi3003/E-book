@@ -5,6 +5,7 @@ export interface PageProps {
   showVideoButton?: boolean;
   isPanoramaLeft?: boolean;
   isPanoramaRight?: boolean;
+  isActive?: boolean; // Add this property to control video playback
 }
 
 export interface BottomIndicatorProps {

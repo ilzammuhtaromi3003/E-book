@@ -1,16 +1,20 @@
+
 "use client";
 
 // components/Flipbook/Page.tsx
 import React from 'react';
 import { PageProps } from './types';
 import VideoButton from '../VideoButton';
+import AutoplayVideo from '../AutoplayVideo';
+import VideoFrame from '../VideoFrame';
 import { panoramaState } from './PanoramaState';
 
 const Page = ({ 
   pageNumber, 
   showVideoButton = false, 
   isPanoramaLeft = false, 
-  isPanoramaRight = false
+  isPanoramaRight = false,
+  isActive = false
 }: PageProps) => {
   // Jika ini halaman panorama kiri atau kanan
   if (isPanoramaLeft || isPanoramaRight) {
@@ -52,6 +56,12 @@ const Page = ({
   // Halaman normal
   const paddedNumber = String(pageNumber).padStart(3, "0");
   
+  // Special handling for page 7 (autoplay video)
+  const isPage7 = pageNumber === 8; // page_Page_008.jpg is page 7
+  
+  // Special handling for page 10 (click-to-play video)
+  const isPage10 = pageNumber === 11; // page_Page_011.jpg is page 10
+  
   return (
     <div className="w-full h-full flex items-center justify-center bg-white relative">
       <img
@@ -76,8 +86,28 @@ const Page = ({
         />
       )}
       
+      {/* Autoplay video on page 7 */}
+      {isPage7 && (
+        <AutoplayVideo 
+          videoSrc="/video2.mp4"
+          isActive={isActive} 
+          position={{ top: '20%', left: '25%' }}
+          dimensions={{ width: '50%', height: 'auto' }}
+        />
+      )}
+      
+      {/* Video frame on page 10 */}
+      {isPage10 && (
+        <VideoFrame 
+          videoSrc="/video2.mp4" 
+          isActive={isActive}
+          position={{ top: '20%', left: '25%' }}
+          dimensions={{ width: '50%', height: 'auto' }}
+        />
+      )}
+      
       {/* Tombol video pada halaman yang bukan panorama */}
-      {showVideoButton && !isPanoramaLeft && !isPanoramaRight && (
+      {showVideoButton && !isPanoramaLeft && !isPanoramaRight && !isPage7 && !isPage10 && (
         <VideoButton 
           videoSrc="/video1.mp4" 
           position={{ top: '20%', left: '80%' }}
@@ -88,3 +118,4 @@ const Page = ({
 };
 
 export default Page;
+

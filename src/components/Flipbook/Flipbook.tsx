@@ -25,6 +25,12 @@ const Flipbook: React.FC = () => {
   // Deteksi apakah ini halaman panorama
   const isPanorama = currentPage === 31 || currentPage === 32;
 
+  // Check if current page is page 7 (file: page_Page_008.jpg)
+  const isPage7Active = currentPage === 7;
+  
+  // Check if current page is page 10 (file: page_Page_011.jpg)
+  const isPage10Active = currentPage === 10;
+
   // Navigation handlers
   const nextPage = useCallback((e?: React.MouseEvent) => {
     if (e) {
@@ -79,6 +85,7 @@ const Flipbook: React.FC = () => {
 
   // Pada onPageChange, tambahkan reset untuk panorama
   const onPageChange = (e: any) => {
+    console.log('Halaman berubah ke:', e.data);
     setCurrentPage(e.data);
     
     // Reset scroll position saat halaman berpindah dari atau ke panorama
@@ -212,9 +219,21 @@ const Flipbook: React.FC = () => {
     
     // Halaman 2-31 (sekarang menjadi halaman 1-30 dalam penomoran)
     for (let i = 2; i <= 31; i++) {
+      // Calculate if this page is active for video playback
+      // Page 7 is file page_Page_008.jpg (index 7 in our array, but actual page number is 7)
+      const isPage7 = i === 8; 
+      // Page 10 is file page_Page_011.jpg (index 10 in our array, but actual page number is 10) 
+      const isPage10 = i === 11;
+      
       pages.push(
         <div key={`regular-${i}`} className="page">
-          <Page pageNumber={i} />
+          <Page 
+            pageNumber={i} 
+            isActive={
+              (isPage7 && currentPage === 7) || 
+              (isPage10 && currentPage === 10)
+            } 
+          />
         </div>
       );
     }
@@ -358,3 +377,4 @@ const Flipbook: React.FC = () => {
 };
 
 export default Flipbook;
+
