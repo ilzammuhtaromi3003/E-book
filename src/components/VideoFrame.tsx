@@ -24,46 +24,94 @@ const VideoFrame: React.FC<VideoFrameProps> = ({
   dimensions = { width: 300, height: 'auto' }
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const lastActiveRef = useRef(isActive);
 
-  // Mengontrol pemutaran video ketika halaman berubah
+  // Main effect to handle page activity changes
   useEffect(() => {
     const videoElement = videoRef.current;
     if (!videoElement) return;
 
-    if (isActive) {
-      // We don't auto-play when page becomes active,
-      // but we need to set up a proper state when the page is active
-      
-      // If needed, you could add initialization logic here
-    } else {
-      // Jika halaman tidak aktif, hentikan video dan reset ke awal
+    console.log("Video frame isActive changed:", isActive);
+
+    // When page becomes inactive, pause and reset the video
+    if (!isActive && lastActiveRef.current) {
+      console.log("Page inactive - pausing video");
       const pausePromise = videoElement.pause();
       videoElement.currentTime = 0;
       
-      // Handle any potential promise rejection just to be safe
       if (pausePromise !== undefined && typeof pausePromise.catch === 'function') {
         pausePromise.catch(error => {
           console.error('Failed to pause video:', error);
         });
       }
     }
-    
-    // Add listener for page visibility change as a backup method
+
+    // Update the last active state
+    lastActiveRef.current = isActive;
+
+    // Create a function to force pause the video
+    const forcePauseVideo = () => {
+      if (videoElement) {
+        console.log("Force pausing video");
+        try {
+          videoElement.pause();
+          videoElement.currentTime = 0;
+        } catch (error) {
+          console.error('Error pausing video:', error);
+        }
+      }
+    };
+
+    // Add visibility change listener
     const handleVisibilityChange = () => {
       if (document.hidden && videoElement) {
-        videoElement.pause();
+        console.log("Document hidden - pausing video");
+        forcePauseVideo();
       }
     };
     
+    // Add beforeunload listener to pause video before page unloads
+    const handleBeforeUnload = () => {
+      forcePauseVideo();
+    };
+    
+    // Add route change listeners for SPAs (if using Next.js router)
+    // This custom event will be dispatched in the Flipbook component
+    const handleRouteChange = () => {
+      console.log("Route changed - pausing video");
+      forcePauseVideo();
+    };
+    
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pageChange', handleRouteChange);
+    
+    // Create a MutationObserver to watch for DOM changes that might indicate navigation
+    const observer = new MutationObserver((mutations) => {
+      // If we detect significant DOM changes, check if our video should pause
+      if (!isActive && videoElement && !videoElement.paused) {
+        console.log("DOM changed - checking video state");
+        forcePauseVideo();
+      }
+    });
+    
+    // Start observing the document body for DOM changes
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: false,
+      characterData: false
+    });
     
     return () => {
+      // Clean up all listeners and observer
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pageChange', handleRouteChange);
+      observer.disconnect();
       
       // Make sure to clean up by pausing the video when component unmounts
-      if (videoElement) {
-        videoElement.pause();
-      }
+      forcePauseVideo();
     };
   }, [isActive]);
 

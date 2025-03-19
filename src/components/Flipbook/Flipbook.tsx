@@ -53,28 +53,37 @@ const Flipbook: React.FC = () => {
   }, []);
 
   // Function to go to specific page - versi sederhana dengan animasi default
-  const goToPage = useCallback((pageNumber: number) => {
-    if (book.current) {
-      // Convert from actual page number to flip index (0-based)
-      // Cover is page 0, so if user enters page 1, we should go to index 0
-      // For other pages, subtract 1 to get the index
-      let targetIndex = pageNumber === 1 ? 0 : pageNumber - 1;
-      
-      // Handle the special case for panorama pages
-      if (pageNumber >= 32 && pageNumber <= 38) {
-        // All panorama pages (32-38) map to indices 31-32
-        targetIndex = 31;
-        // Reset ke paling kiri saat masuk ke halaman panorama
-        panoramaState.setScrollValue(0);
-      } else if (pageNumber > 38) {
-        // Pages after panorama need to be adjusted (skipping indices 32-38)
-        targetIndex = pageNumber - 7;
-      }
-      
-      // Pindah ke halaman yang dituju menggunakan animasi default dari react-pageflip
-      book.current.pageFlip().turnToPage(targetIndex);
+const goToPage = useCallback((pageNumber: number) => {
+  if (book.current) {
+    // Dispatch custom event for any videos to respond to
+    const pageChangeEvent = new CustomEvent('pageChange', { 
+      detail: { 
+        previousPage: currentPage,
+        targetPage: pageNumber 
+      } 
+    });
+    window.dispatchEvent(pageChangeEvent);
+    
+    // Convert from actual page number to flip index (0-based)
+    // Cover is page 0, so if user enters page 1, we should go to index 0
+    // For other pages, subtract 1 to get the index
+    let targetIndex = pageNumber === 1 ? 0 : pageNumber - 1;
+    
+    // Handle the special case for panorama pages
+    if (pageNumber >= 32 && pageNumber <= 38) {
+      // All panorama pages (32-38) map to indices 31-32
+      targetIndex = 31;
+      // Reset ke paling kiri saat masuk ke halaman panorama
+      panoramaState.setScrollValue(0);
+    } else if (pageNumber > 38) {
+      // Pages after panorama need to be adjusted (skipping indices 32-38)
+      targetIndex = pageNumber - 7;
     }
-  }, []);
+    
+    // Pindah ke halaman yang dituju menggunakan animasi default dari react-pageflip
+    book.current.pageFlip().turnToPage(targetIndex);
+  }
+}, [currentPage]);
 
   // Function to go back to cover
   const goToHome = useCallback(() => {
@@ -84,20 +93,30 @@ const Flipbook: React.FC = () => {
   }, []);
 
   // Pada onPageChange, tambahkan reset untuk panorama
-  const onPageChange = (e: any) => {
-    console.log('Halaman berubah ke:', e.data);
-    setCurrentPage(e.data);
-    
-    // Reset scroll position saat halaman berpindah dari atau ke panorama
-    if (e.data !== 31 && e.data !== 32) {
-      panoramaState.reset();
-      setScrollValue(0);
-    } else if (e.data === 31 || e.data === 32) {
-      // Selalu mulai dari kiri saat masuk ke halaman panorama
-      panoramaState.reset();
-      setScrollValue(0);
-    }
-  };
+  // Pada onPageChange, tambahkan reset untuk panorama dan dispatch custom event
+const onPageChange = (e: any) => {
+  console.log('Halaman berubah ke:', e.data);
+  setCurrentPage(e.data);
+  
+  // Dispatch custom event for videos to respond to
+  const pageChangeEvent = new CustomEvent('pageChange', { 
+    detail: { 
+      previousPage: currentPage,
+      currentPage: e.data 
+    } 
+  });
+  window.dispatchEvent(pageChangeEvent);
+  
+  // Reset scroll position saat halaman berpindah dari atau ke panorama
+  if (e.data !== 31 && e.data !== 32) {
+    panoramaState.reset();
+    setScrollValue(0);
+  } else if (e.data === 31 || e.data === 32) {
+    // Selalu mulai dari kiri saat masuk ke halaman panorama
+    panoramaState.reset();
+    setScrollValue(0);
+  }
+};
 
   // Sync scroll value dengan state panorama saat masuk ke halaman panorama
   useEffect(() => {
