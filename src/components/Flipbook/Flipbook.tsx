@@ -59,46 +59,50 @@ const Flipbook: React.FC = () => {
     }
   }, []);
 
-// Function to go to specific page dengan perbaikan logika
-const goToPage = useCallback((pageNumber: number) => {
-  if (book.current) {
-    console.log(`Trying to go to page: ${pageNumber}`);
-    
-    // Dispatch custom event for any videos to respond to
-    const pageChangeEvent = new CustomEvent('pageChange', { 
-      detail: { 
-        previousPage: currentPage,
-        targetPage: pageNumber 
-      } 
-    });
-    window.dispatchEvent(pageChangeEvent);
-    
-    // PERBAIKAN PEMETAAN HALAMAN:
-    
-    // Cover adalah halaman 1, index 0
-    let targetIndex = pageNumber - 1;
-    
-    // Panorama HANYA halaman 31-37 (bukan 31-38)
-    if (pageNumber >= 31 && pageNumber <= 37) {
-      targetIndex = 31; // Panorama kiri dimulai di index 31
-      panoramaState.setScrollValue(0);
-      console.log(`Panorama page ${pageNumber} maps to index ${targetIndex}`);
-    } 
-    // Halaman setelah panorama (38+)
-    else if (pageNumber >= 38) {
-      // Panorama menggunakan 7 halaman (31-37) tapi hanya 2 indices (31-32)
-      // Jadi kita perlu mengurangi 5 (7-2=5) dari index normal
-      targetIndex = 33 + (pageNumber - 38);
-      console.log(`Post-panorama page ${pageNumber} maps to index ${targetIndex}`);
+  // Function to go to specific page with correctly fixed logic
+  const goToPage = useCallback((pageNumber: number) => {
+    if (book.current) {
+      console.log(`Trying to go to page: ${pageNumber}`);
+      
+      // Dispatch custom event for any videos to respond to
+      const pageChangeEvent = new CustomEvent('pageChange', { 
+        detail: { 
+          previousPage: currentPage,
+          targetPage: pageNumber 
+        } 
+      });
+      window.dispatchEvent(pageChangeEvent);
+      
+      // FIXED MAPPING LOGIC:
+      let targetIndex;
+      
+      // Cover is page 1, index 0
+      if (pageNumber === 1) {
+        targetIndex = 0;
+      }
+      // Panorama pages (31-37)
+      else if (pageNumber >= 31 && pageNumber <= 37) {
+        targetIndex = 31;
+        panoramaState.setScrollValue(0);
+      }
+      // Pages after panorama (38+)
+      else if (pageNumber >= 38) {
+        // For pages after panorama, we need to account for the 5 "missing" indices
+        // (7 panorama pages represented by only 2 indices: 31-32)
+        targetIndex = pageNumber - 5; // -5 to account for panorama compression
+      }
+      // Regular pages (2-30)
+      else {
+        // No adjustment for regular pages
+        targetIndex = pageNumber;
+      }
+      
+      console.log(`Page ${pageNumber} maps to book index ${targetIndex}`);
+      
+      // Go to the target page
+      book.current.pageFlip().turnToPage(targetIndex);
     }
-    else {
-      console.log(`Regular page ${pageNumber} maps to index ${targetIndex}`);
-    }
-    
-    // Pindah ke halaman yang dituju
-    book.current.pageFlip().turnToPage(targetIndex);
-  }
-}, [currentPage]);
+  }, [currentPage]);
 
   // Function to go back to cover
   const goToHome = useCallback(() => {
@@ -302,56 +306,56 @@ const goToPage = useCallback((pageNumber: number) => {
     return pages;
   };
 
- // Hitung nomor halaman yang ditampilkan di navbar
-const getDisplayPageNumber = () => {
-  // Jika di halaman cover, tampilkan "Cover"
-  if (currentPage === 0) {
-    return "Cover";
-  }
-  
-  // Untuk halaman panorama (hanya 31-37, indeks 31-32)
-  if (currentPage === 31 || currentPage === 32) {
-    return "31-37";
-  }
-  
-  // Untuk halaman normal sebelum panorama (indeks 1-30 = halaman 1-30)
-  if (currentPage >= 1 && currentPage <= 30) {
-    // Untuk halaman genap, tunjukkan dengan halaman sebelumnya
-    if (currentPage % 2 === 0) {
-      return `${currentPage-1}-${currentPage}`;
+  // Hitung nomor halaman yang ditampilkan di navbar
+  const getDisplayPageNumber = () => {
+    // Jika di halaman cover, tampilkan "Cover"
+    if (currentPage === 0) {
+      return "Cover";
     }
-    // Untuk halaman ganjil, tunjukkan dengan halaman berikutnya jika ada
-    else if (currentPage < 30) {
-      return `${currentPage}-${currentPage+1}`;
-    }
-    // Untuk halaman 29, pasangkan dengan 30
-    else {
-      return `${currentPage}-${currentPage+1}`;
-    }
-  }
-  
-  // Untuk halaman setelah panorama (indeks 33+ = halaman 38+)
-  if (currentPage >= 33) {
-    // Hitung nomor halaman yang sebenarnya
-    const actualPage = currentPage + 5; // Karena indeks 33 = halaman 38
     
-    // Untuk indeks genap, pasangkan "sebelumnya-ini"
-    if (currentPage % 2 === 0) {
-      return `${actualPage-1}-${actualPage}`;
+    // Untuk halaman panorama (hanya 31-37, indeks 31-32)
+    if (currentPage === 31 || currentPage === 32) {
+      return "31-37";
     }
-    // Untuk indeks ganjil, pasangkan "ini-berikutnya" jika ada
-    else if (actualPage < totalPages) {
-      return `${actualPage}-${actualPage+1}`;
+    
+    // Untuk halaman normal sebelum panorama (indeks 1-30 = halaman 1-30)
+    if (currentPage >= 1 && currentPage <= 30) {
+      // Untuk halaman genap, tunjukkan dengan halaman sebelumnya
+      if (currentPage % 2 === 0) {
+        return `${currentPage-1}-${currentPage}`;
+      }
+      // Untuk halaman ganjil, tunjukkan dengan halaman berikutnya jika ada
+      else if (currentPage < 30) {
+        return `${currentPage}-${currentPage+1}`;
+      }
+      // Untuk halaman 29, pasangkan dengan 30
+      else {
+        return `${currentPage}-${currentPage+1}`;
+      }
     }
-    // Jika halaman terakhir dan ganjil, tampilkan sendiri
-    else {
-      return `${actualPage}`;
+    
+    // Untuk halaman setelah panorama (indeks 33+ = halaman 38+)
+    if (currentPage >= 33) {
+      // Hitung nomor halaman yang sebenarnya
+      const actualPage = currentPage + 5; // Karena indeks 33 = halaman 38
+      
+      // Untuk indeks genap, pasangkan "sebelumnya-ini"
+      if (currentPage % 2 === 0) {
+        return `${actualPage-1}-${actualPage}`;
+      }
+      // Untuk indeks ganjil, pasangkan "ini-berikutnya" jika ada
+      else if (actualPage < totalPages) {
+        return `${actualPage}-${actualPage+1}`;
+      }
+      // Jika halaman terakhir dan ganjil, tampilkan sendiri
+      else {
+        return `${actualPage}`;
+      }
     }
-  }
-  
-  // Fallback
-  return `${currentPage}`;
-};
+    
+    // Fallback
+    return `${currentPage}`;
+  };
 
   return (
     <div 
