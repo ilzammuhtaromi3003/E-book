@@ -53,7 +53,6 @@ const AutoplayVideo: React.FC<AutoplayVideoProps> = ({
         position: 'absolute',
         ...position,
         zIndex: 10,
-        boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
         borderRadius: '8px',
         overflow: 'hidden'
       }}

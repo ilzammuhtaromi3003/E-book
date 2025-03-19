@@ -89,7 +89,7 @@ const Page = ({
       {/* Autoplay video on page 7 */}
       {isPage7 && (
         <AutoplayVideo 
-          videoSrc="/video2.mp4"
+          videoSrc="/video3.mp4"
           isActive={isActive} 
           position={{ top: '20%', left: '25%' }}
           dimensions={{ width: '50%', height: 'auto' }}

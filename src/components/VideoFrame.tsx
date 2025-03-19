@@ -121,8 +121,7 @@ const VideoFrame: React.FC<VideoFrameProps> = ({
         position: 'absolute',
         ...position,
         zIndex: 10,
-        boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
-        borderRadius: '8px',
+        // borderRadius: '8px',
         overflow: 'hidden'
       }}
       onMouseDown={(e) => e.stopPropagation()}
