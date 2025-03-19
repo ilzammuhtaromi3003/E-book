@@ -30,11 +30,41 @@ const VideoFrame: React.FC<VideoFrameProps> = ({
     const videoElement = videoRef.current;
     if (!videoElement) return;
 
-    if (!isActive) {
+    if (isActive) {
+      // We don't auto-play when page becomes active,
+      // but we need to set up a proper state when the page is active
+      
+      // If needed, you could add initialization logic here
+    } else {
       // Jika halaman tidak aktif, hentikan video dan reset ke awal
-      videoElement.pause();
+      const pausePromise = videoElement.pause();
       videoElement.currentTime = 0;
+      
+      // Handle any potential promise rejection just to be safe
+      if (pausePromise !== undefined && typeof pausePromise.catch === 'function') {
+        pausePromise.catch(error => {
+          console.error('Failed to pause video:', error);
+        });
+      }
     }
+    
+    // Add listener for page visibility change as a backup method
+    const handleVisibilityChange = () => {
+      if (document.hidden && videoElement) {
+        videoElement.pause();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      
+      // Make sure to clean up by pausing the video when component unmounts
+      if (videoElement) {
+        videoElement.pause();
+      }
+    };
   }, [isActive]);
 
   return (
@@ -43,19 +73,9 @@ const VideoFrame: React.FC<VideoFrameProps> = ({
         position: 'absolute',
         ...position,
         zIndex: 10,
-        boxShadow: '0 8px 20px rgba(0,0,0,0.5)',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        border: '5px solid white',
-        transition: 'transform 0.3s ease',
-        transform: 'scale(1)',
-        maxWidth: '90%'
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'scale(1.02)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'scale(1)';
+        boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+        borderRadius: '8px',
+        overflow: 'hidden'
       }}
       onMouseDown={(e) => e.stopPropagation()}
       onTouchStart={(e) => e.stopPropagation()}
@@ -67,12 +87,11 @@ const VideoFrame: React.FC<VideoFrameProps> = ({
           width: dimensions.width,
           height: dimensions.height,
           objectFit: 'contain',
-          display: 'block',
-          backgroundColor: '#000'
+          display: 'block'
         }}
         playsInline
+        loop
         controls
-        poster="/video-poster.jpg"
         onMouseDown={(e) => e.stopPropagation()}
       />
     </div>

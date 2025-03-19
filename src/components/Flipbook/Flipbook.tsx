@@ -29,7 +29,7 @@ const Flipbook: React.FC = () => {
   const isPage7Active = currentPage === 7;
   
   // Check if current page is page 10 (file: page_Page_011.jpg)
-  const isPage10Active = currentPage === 10;
+  const isPage10Active = currentPage === 11;
 
   // Navigation handlers
   const nextPage = useCallback((e?: React.MouseEvent) => {
@@ -231,7 +231,7 @@ const Flipbook: React.FC = () => {
             pageNumber={i} 
             isActive={
               (isPage7 && currentPage === 7) || 
-              (isPage10 && currentPage === 10)
+              (isPage10 && currentPage === 11)
             } 
           />
         </div>
