@@ -3,6 +3,7 @@
 // components/Flipbook/ControlBar.tsx
 import React from 'react';
 import { ControlBarProps } from './types';
+import { BsGrid3X3Gap } from 'react-icons/bs';
 
 const ControlBar: React.FC<ControlBarProps> = ({
   zoom,
@@ -11,7 +12,9 @@ const ControlBar: React.FC<ControlBarProps> = ({
   onDownload,
   onToggleFullscreen,
   onGoHome,
-  isFullscreen
+  onToggleThumbnails, // New prop
+  isFullscreen,
+  showThumbnails // New prop
 }) => {
   // Gaya untuk control bar
   const controlBarStyle: React.CSSProperties = {
@@ -19,9 +22,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
     alignItems: 'center',
     justifyContent: 'center',
     padding: '10px 20px',
-    // backgroundColor: 'white',
     borderRadius: '8px',
-    // boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
     margin: '10px auto',
     width: '95%',
     maxWidth: '600px',
@@ -48,6 +49,14 @@ const ControlBar: React.FC<ControlBarProps> = ({
     color: '#2563eb',
     cursor: 'pointer',
     padding: 0,
+  };
+  
+  // Gaya untuk tombol aktif
+  const activeButtonStyle: React.CSSProperties = {
+    ...buttonStyle,
+    backgroundColor: '#e6f0ff',
+    color: '#0d47a1',
+    border: '1px solid #90caf9',
   };
   
   // Gaya untuk tombol yang dinonaktifkan
@@ -80,6 +89,15 @@ const ControlBar: React.FC<ControlBarProps> = ({
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M9 22V12h6v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
+        </button>
+        
+        {/* Thumbnails button */}
+        <button
+          onClick={onToggleThumbnails}
+          style={showThumbnails ? activeButtonStyle : buttonStyle}
+          aria-label={showThumbnails ? "Hide Thumbnails" : "Show Thumbnails"}
+        >
+          <BsGrid3X3Gap size={18} />
         </button>
         
         {/* Zoom out button */}

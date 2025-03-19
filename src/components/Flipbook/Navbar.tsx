@@ -13,12 +13,42 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
   const [inputValue, setInputValue] = useState<string>('');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   
+  // Format halaman untuk menampilkan halaman berpasangan
+  const formatPageDisplay = (pageDisplay: string): string => {
+    // Jika pageDisplay adalah "Cover" atau berisi "Panorama", kembalikan tanpa perubahan
+    if (pageDisplay === "Cover" || pageDisplay.includes("-")) {
+      return pageDisplay;
+    }
+    
+    // Konversi ke nomor
+    const pageNum = parseInt(pageDisplay);
+    
+    // Jika bukan angka yang valid, kembalikan tanpa perubahan
+    if (isNaN(pageNum)) {
+      return pageDisplay;
+    }
+    
+    // Halaman 1,3,5,... (ganjil) pasangannya dengan halaman berikutnya
+    if (pageNum % 2 === 1) {
+      // Pastikan halaman berikutnya tidak melebihi total halaman
+      if (pageNum + 1 <= totalPages) {
+        return `${pageNum}-${pageNum + 1}`;
+      }
+      return `${pageNum}`;
+    }
+    
+    // Halaman 2,4,6,... (genap) pasangannya dengan halaman sebelumnya
+    return `${pageNum - 1}-${pageNum}`;
+  };
+  
   // Update input value when pageDisplay changes
   useEffect(() => {
     if (!isEditing) {
-      setInputValue(pageDisplay);
+      // Format ulang pageDisplay untuk menampilkan halaman berpasangan
+      const formattedDisplay = formatPageDisplay(pageDisplay);
+      setInputValue(formattedDisplay);
     }
-  }, [pageDisplay, isEditing]);
+  }, [pageDisplay, isEditing, totalPages]);
   
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,13 +71,24 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
   
   // Handle page submission
   const handlePageSubmit = () => {
-    // If input is a valid number, go to that page
+    // Periksa jika input adalah rentang halaman (misalnya "23-24")
+    const rangeMatch = inputValue.match(/^(\d+)-(\d+)$/);
+    if (rangeMatch) {
+      // Jika range, gunakan halaman pertama dari range
+      const firstPage = parseInt(rangeMatch[1]);
+      if (!isNaN(firstPage) && firstPage >= 1 && firstPage <= totalPages) {
+        onGoToPage(firstPage);
+        return;
+      }
+    }
+    
+    // Jika bukan range atau range tidak valid, coba parsing sebagai angka tunggal
     const pageNumber = parseInt(inputValue);
     if (!isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= totalPages) {
       onGoToPage(pageNumber);
     } else {
       // Reset to current page if invalid input
-      setInputValue(pageDisplay);
+      setInputValue(formatPageDisplay(pageDisplay));
     }
   };
   
@@ -84,7 +125,7 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
               onClick={handleDisplayClick} 
               className="w-24 px-2 py-1 text-center cursor-text"
             >
-              {pageDisplay}
+              {inputValue} {/* Menggunakan inputValue yang sudah diformat */}
             </span>
           )}
           <span className="ml-2">/ {totalPages}</span>

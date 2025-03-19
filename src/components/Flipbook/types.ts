@@ -28,11 +28,21 @@ export interface ControlBarProps {
   onDownload: () => void;
   onToggleFullscreen: () => void;
   onGoHome: () => void;
+  onToggleThumbnails: () => void; // New prop
   isFullscreen: boolean;
+  showThumbnails: boolean; // New prop
 }
 
 export interface NavbarProps {
   pageDisplay: string;
   totalPages: number;
   onGoToPage: (page: number) => void;
+}
+
+export interface ThumbnailsProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onPageSelect: (pageNumber: number) => void;
+  totalPages: number;
+  currentPage: number;
 }

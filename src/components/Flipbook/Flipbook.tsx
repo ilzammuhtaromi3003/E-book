@@ -11,6 +11,7 @@ import Navbar from './Navbar';
 import { PanoramaLeftPage, PanoramaRightPage } from './PanoramaPages';
 import PanoramaSlider from './PanoramaSlider';
 import { panoramaState } from './PanoramaState';
+import Thumbnails from '../Thumbnails'; // Import the Thumbnails component
 import './styles.css';
 
 const Flipbook: React.FC = () => {
@@ -21,6 +22,7 @@ const Flipbook: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [scrollValue, setScrollValue] = useState(0);
+  const [showThumbnails, setShowThumbnails] = useState(false); // State for thumbnails
   
   // Deteksi apakah ini halaman panorama
   const isPanorama = currentPage === 31 || currentPage === 32;
@@ -30,6 +32,11 @@ const Flipbook: React.FC = () => {
   
   // Check if current page is page 10 (file: page_Page_011.jpg)
   const isPage10Active = currentPage === 11;
+
+  // Toggle thumbnails sidebar
+  const toggleThumbnails = useCallback(() => {
+    setShowThumbnails(prev => !prev);
+  }, []);
 
   // Navigation handlers
   const nextPage = useCallback((e?: React.MouseEvent) => {
@@ -52,9 +59,11 @@ const Flipbook: React.FC = () => {
     }
   }, []);
 
-  // Function to go to specific page - versi sederhana dengan animasi default
+// Function to go to specific page dengan perbaikan logika
 const goToPage = useCallback((pageNumber: number) => {
   if (book.current) {
+    console.log(`Trying to go to page: ${pageNumber}`);
+    
     // Dispatch custom event for any videos to respond to
     const pageChangeEvent = new CustomEvent('pageChange', { 
       detail: { 
@@ -64,23 +73,29 @@ const goToPage = useCallback((pageNumber: number) => {
     });
     window.dispatchEvent(pageChangeEvent);
     
-    // Convert from actual page number to flip index (0-based)
-    // Cover is page 0, so if user enters page 1, we should go to index 0
-    // For other pages, subtract 1 to get the index
-    let targetIndex = pageNumber === 1 ? 0 : pageNumber - 1;
+    // PERBAIKAN PEMETAAN HALAMAN:
     
-    // Handle the special case for panorama pages
-    if (pageNumber >= 32 && pageNumber <= 38) {
-      // All panorama pages (32-38) map to indices 31-32
-      targetIndex = 31;
-      // Reset ke paling kiri saat masuk ke halaman panorama
+    // Cover adalah halaman 1, index 0
+    let targetIndex = pageNumber - 1;
+    
+    // Panorama HANYA halaman 31-37 (bukan 31-38)
+    if (pageNumber >= 31 && pageNumber <= 37) {
+      targetIndex = 31; // Panorama kiri dimulai di index 31
       panoramaState.setScrollValue(0);
-    } else if (pageNumber > 38) {
-      // Pages after panorama need to be adjusted (skipping indices 32-38)
-      targetIndex = pageNumber - 7;
+      console.log(`Panorama page ${pageNumber} maps to index ${targetIndex}`);
+    } 
+    // Halaman setelah panorama (38+)
+    else if (pageNumber >= 38) {
+      // Panorama menggunakan 7 halaman (31-37) tapi hanya 2 indices (31-32)
+      // Jadi kita perlu mengurangi 5 (7-2=5) dari index normal
+      targetIndex = 33 + (pageNumber - 38);
+      console.log(`Post-panorama page ${pageNumber} maps to index ${targetIndex}`);
+    }
+    else {
+      console.log(`Regular page ${pageNumber} maps to index ${targetIndex}`);
     }
     
-    // Pindah ke halaman yang dituju menggunakan animasi default dari react-pageflip
+    // Pindah ke halaman yang dituju
     book.current.pageFlip().turnToPage(targetIndex);
   }
 }, [currentPage]);
@@ -93,29 +108,29 @@ const goToPage = useCallback((pageNumber: number) => {
   }, []);
 
   // Pada onPageChange, tambahkan reset untuk panorama dan dispatch custom event
-const onPageChange = (e: any) => {
-  console.log('Halaman berubah ke:', e.data);
-  setCurrentPage(e.data);
-  
-  // Dispatch custom event for videos to respond to
-  const pageChangeEvent = new CustomEvent('pageChange', { 
-    detail: { 
-      previousPage: currentPage,
-      currentPage: e.data 
-    } 
-  });
-  window.dispatchEvent(pageChangeEvent);
-  
-  // Reset scroll position saat halaman berpindah dari atau ke panorama
-  if (e.data !== 31 && e.data !== 32) {
-    panoramaState.reset();
-    setScrollValue(0);
-  } else if (e.data === 31 || e.data === 32) {
-    // Selalu mulai dari kiri saat masuk ke halaman panorama
-    panoramaState.reset();
-    setScrollValue(0);
-  }
-};
+  const onPageChange = (e: any) => {
+    console.log('Halaman berubah ke:', e.data);
+    setCurrentPage(e.data);
+    
+    // Dispatch custom event for videos to respond to
+    const pageChangeEvent = new CustomEvent('pageChange', { 
+      detail: { 
+        previousPage: currentPage,
+        currentPage: e.data 
+      } 
+    });
+    window.dispatchEvent(pageChangeEvent);
+    
+    // Reset scroll position saat halaman berpindah dari atau ke panorama
+    if (e.data !== 31 && e.data !== 32) {
+      panoramaState.reset();
+      setScrollValue(0);
+    } else if (e.data === 31 || e.data === 32) {
+      // Selalu mulai dari kiri saat masuk ke halaman panorama
+      panoramaState.reset();
+      setScrollValue(0);
+    }
+  };
 
   // Sync scroll value dengan state panorama saat masuk ke halaman panorama
   useEffect(() => {
@@ -213,6 +228,12 @@ const onPageChange = (e: any) => {
         toggleFullscreen();
       } else if (e.key === 'h' || e.key === 'H') {
         goToHome();
+      } else if (e.key === 't' || e.key === 'T') {
+        toggleThumbnails();
+      } else if (e.key === 'Escape') {
+        if (showThumbnails) {
+          setShowThumbnails(false);
+        }
       }
     };
     
@@ -229,7 +250,7 @@ const onPageChange = (e: any) => {
       window.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
-  }, [prevPage, nextPage, handleZoomIn, handleZoomOut, toggleFullscreen, isPanorama, goToHome]);
+  }, [prevPage, nextPage, handleZoomIn, handleZoomOut, toggleFullscreen, isPanorama, goToHome, toggleThumbnails, showThumbnails]);
 
   // Function untuk render halaman
   const renderPages = () => {
@@ -281,26 +302,56 @@ const onPageChange = (e: any) => {
     return pages;
   };
 
-  // Hitung nomor halaman yang ditampilkan
-  const getDisplayPageNumber = () => {
-    // Jika di halaman cover, tampilkan "Cover"
-    if (currentPage === 0) {
-      return "Cover";
+ // Hitung nomor halaman yang ditampilkan di navbar
+const getDisplayPageNumber = () => {
+  // Jika di halaman cover, tampilkan "Cover"
+  if (currentPage === 0) {
+    return "Cover";
+  }
+  
+  // Untuk halaman panorama (hanya 31-37, indeks 31-32)
+  if (currentPage === 31 || currentPage === 32) {
+    return "31-37";
+  }
+  
+  // Untuk halaman normal sebelum panorama (indeks 1-30 = halaman 1-30)
+  if (currentPage >= 1 && currentPage <= 30) {
+    // Untuk halaman genap, tunjukkan dengan halaman sebelumnya
+    if (currentPage % 2 === 0) {
+      return `${currentPage-1}-${currentPage}`;
     }
-    
-    // Untuk spread halaman panorama khusus (halaman 31-32)
-    if (currentPage === 31 || currentPage === 32) {
-      return "31 - 37";
+    // Untuk halaman ganjil, tunjukkan dengan halaman berikutnya jika ada
+    else if (currentPage < 30) {
+      return `${currentPage}-${currentPage+1}`;
     }
-    
-    // Untuk halaman setelah panorama
-    if (currentPage >= 33) {
-      return `${(currentPage - 1) + 6}`;
+    // Untuk halaman 29, pasangkan dengan 30
+    else {
+      return `${currentPage}-${currentPage+1}`;
     }
+  }
+  
+  // Untuk halaman setelah panorama (indeks 33+ = halaman 38+)
+  if (currentPage >= 33) {
+    // Hitung nomor halaman yang sebenarnya
+    const actualPage = currentPage + 5; // Karena indeks 33 = halaman 38
     
-    // Halaman normal sebelum panorama
-    return `${currentPage}`;
-  };
+    // Untuk indeks genap, pasangkan "sebelumnya-ini"
+    if (currentPage % 2 === 0) {
+      return `${actualPage-1}-${actualPage}`;
+    }
+    // Untuk indeks ganjil, pasangkan "ini-berikutnya" jika ada
+    else if (actualPage < totalPages) {
+      return `${actualPage}-${actualPage+1}`;
+    }
+    // Jika halaman terakhir dan ganjil, tampilkan sendiri
+    else {
+      return `${actualPage}`;
+    }
+  }
+  
+  // Fallback
+  return `${currentPage}`;
+};
 
   return (
     <div 
@@ -388,11 +439,21 @@ const onPageChange = (e: any) => {
         onDownload={handleDownload}
         onToggleFullscreen={toggleFullscreen}
         onGoHome={goToHome}
+        onToggleThumbnails={toggleThumbnails}
         isFullscreen={isFullscreen}
+        showThumbnails={showThumbnails}
+      />
+      
+      {/* Thumbnails Sidebar */}
+      <Thumbnails 
+        isOpen={showThumbnails}
+        onClose={() => setShowThumbnails(false)}
+        onPageSelect={goToPage}
+        totalPages={totalPages}
+        currentPage={currentPage}
       />
     </div>
   );
 };
 
 export default Flipbook;
-
