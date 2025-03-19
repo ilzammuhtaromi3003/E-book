@@ -92,7 +92,6 @@ const goToPage = useCallback((pageNumber: number) => {
     }
   }, []);
 
-  // Pada onPageChange, tambahkan reset untuk panorama
   // Pada onPageChange, tambahkan reset untuk panorama dan dispatch custom event
 const onPageChange = (e: any) => {
   console.log('Halaman berubah ke:', e.data);
