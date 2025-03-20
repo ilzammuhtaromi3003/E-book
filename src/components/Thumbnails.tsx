@@ -74,13 +74,7 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
   const handleThumbnailClick = (pageNumber: number) => {
     console.log(`Thumbnail clicked: Page ${pageNumber}`);
     
-    // KASUS KHUSUS untuk Cover
-    if (pageNumber === 0) {
-      // Jika ini adalah cover, kita ingin tetap membuka cover
-      onPageSelect(1);
-      return;
-    }
-    
+    // Send the actual page number directly (no processing needed, handled by goToPage)
     onPageSelect(pageNumber);
   };
 
@@ -185,7 +179,7 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
           {/* Halaman 29 */}
           <div 
             className="cursor-pointer thumbnail-item"
-            onClick={() => handleThumbnailClick(28)}
+            onClick={() => handleThumbnailClick(29)} // FIXED: Use 29 directly
           >
             <div className="thumbnail-image-container">
               <img
@@ -200,7 +194,7 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
           {/* Halaman 30 */}
           <div 
             className="cursor-pointer thumbnail-item"
-            onClick={() => handleThumbnailClick(29)}
+            onClick={() => handleThumbnailClick(30)}
           >
             <div className="thumbnail-image-container">
               <img

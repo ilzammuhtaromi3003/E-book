@@ -77,19 +77,15 @@ const goToPage = useCallback((pageNumber: number) => {
     // FIXED MAPPING LOGIC:
     let targetIndex;
     
-    // Special handling for page numbers to indices
+    // THUMBNAIL SPECIAL CASES
     
-    // Cover (page 0)
+    // Cover (special case from thumbnail)
     if (pageNumber === 0) {
-      targetIndex = 0; // Cover is at index 0
+      targetIndex = 0; // Go to actual cover
     }
-    // Page 1 should show pages 1-2
-    else if (pageNumber === 1) {
-      targetIndex = 1; // Index 1 shows pages 1-2
-    }
-    // Page 29 should show pages 29-30
-    else if (pageNumber === 28) {
-      targetIndex = 29; // Index 29 shows pages 29-30
+    // Special case for page 29 from thumbnail
+    else if (pageNumber === 29) {
+      targetIndex = 29; // Show pages 29-30
     }
     // Panorama pages (31-37)
     else if (pageNumber >= 31 && pageNumber <= 37) {
@@ -102,7 +98,7 @@ const goToPage = useCallback((pageNumber: number) => {
       // (7 panorama pages represented by only 2 indices: 31-32)
       targetIndex = pageNumber - 5; // -5 to account for panorama compression
     }
-    // Regular pages (2-30, except 29)
+    // Regular pages (1-30, except special cases)
     else {
       // Regular page mapping
       targetIndex = pageNumber;
