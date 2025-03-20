@@ -14,7 +14,11 @@ import { panoramaState } from './PanoramaState';
 import Thumbnails from '../Thumbnails'; // Import the Thumbnails component
 import './styles.css';
 
-const Flipbook: React.FC = () => {
+interface FlipbookProps {
+  lang?: string; // Make the lang prop optional with a default value
+}
+
+const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
   const totalPages = 162; // Total halaman yang sebenarnya
   const book = useRef<any>(null);
   const flipbookContainerRef = useRef<HTMLDivElement>(null);
@@ -60,56 +64,55 @@ const Flipbook: React.FC = () => {
   }, []);
 
   // Function to go to specific page with correctly fixed logic
-  // Function to go to specific page with correctly fixed logic
-const goToPage = useCallback((pageNumber: number) => {
-  if (book.current) {
-    console.log(`Trying to go to page: ${pageNumber}`);
-    
-    // Dispatch custom event for any videos to respond to
-    const pageChangeEvent = new CustomEvent('pageChange', { 
-      detail: { 
-        previousPage: currentPage,
-        targetPage: pageNumber 
-      } 
-    });
-    window.dispatchEvent(pageChangeEvent);
-    
-    // FIXED MAPPING LOGIC:
-    let targetIndex;
-    
-    // THUMBNAIL SPECIAL CASES
-    
-    // Cover (special case from thumbnail)
-    if (pageNumber === 0) {
-      targetIndex = 0; // Go to actual cover
+  const goToPage = useCallback((pageNumber: number) => {
+    if (book.current) {
+      console.log(`Trying to go to page: ${pageNumber}`);
+      
+      // Dispatch custom event for any videos to respond to
+      const pageChangeEvent = new CustomEvent('pageChange', { 
+        detail: { 
+          previousPage: currentPage,
+          targetPage: pageNumber 
+        } 
+      });
+      window.dispatchEvent(pageChangeEvent);
+      
+      // FIXED MAPPING LOGIC:
+      let targetIndex;
+      
+      // THUMBNAIL SPECIAL CASES
+      
+      // Cover (special case from thumbnail)
+      if (pageNumber === 0) {
+        targetIndex = 0; // Go to actual cover
+      }
+      // Special case for page 29 from thumbnail
+      else if (pageNumber === 29) {
+        targetIndex = 29; // Show pages 29-30
+      }
+      // Panorama pages (31-37)
+      else if (pageNumber >= 31 && pageNumber <= 37) {
+        targetIndex = 31;
+        panoramaState.setScrollValue(0);
+      }
+      // Pages after panorama (38+)
+      else if (pageNumber >= 38) {
+        // For pages after panorama, we need to account for the 5 "missing" indices
+        // (7 panorama pages represented by only 2 indices: 31-32)
+        targetIndex = pageNumber - 5; // -5 to account for panorama compression
+      }
+      // Regular pages (1-30, except special cases)
+      else {
+        // Regular page mapping
+        targetIndex = pageNumber;
+      }
+      
+      console.log(`Page ${pageNumber} maps to book index ${targetIndex}`);
+      
+      // Go to the target page
+      book.current.pageFlip().turnToPage(targetIndex);
     }
-    // Special case for page 29 from thumbnail
-    else if (pageNumber === 29) {
-      targetIndex = 29; // Show pages 29-30
-    }
-    // Panorama pages (31-37)
-    else if (pageNumber >= 31 && pageNumber <= 37) {
-      targetIndex = 31;
-      panoramaState.setScrollValue(0);
-    }
-    // Pages after panorama (38+)
-    else if (pageNumber >= 38) {
-      // For pages after panorama, we need to account for the 5 "missing" indices
-      // (7 panorama pages represented by only 2 indices: 31-32)
-      targetIndex = pageNumber - 5; // -5 to account for panorama compression
-    }
-    // Regular pages (1-30, except special cases)
-    else {
-      // Regular page mapping
-      targetIndex = pageNumber;
-    }
-    
-    console.log(`Page ${pageNumber} maps to book index ${targetIndex}`);
-    
-    // Go to the target page
-    book.current.pageFlip().turnToPage(targetIndex);
-  }
-}, [currentPage]);
+  }, [currentPage]);
 
   // Function to go back to cover
   const goToHome = useCallback(() => {
@@ -424,7 +427,7 @@ const goToPage = useCallback((pageNumber: number) => {
             >
               {/* Halaman cover */}
               <div className="page page-cover">
-                <Cover />
+                <Cover lang={lang} />
               </div>
               
               {/* Generate semua halaman */}
@@ -434,11 +437,12 @@ const goToPage = useCallback((pageNumber: number) => {
           
           {/* Slider untuk panorama - hanya muncul di halaman panorama */}
           {isPanorama && (
-            <PanoramaSlider 
-              scrollValue={scrollValue} 
-              setScrollValue={handleScrollValueChange} 
-            />
-          )}
+  <PanoramaSlider 
+    scrollValue={scrollValue} 
+    setScrollValue={handleScrollValueChange}
+    lang={lang} // Teruskan prop lang ke PanoramaSlider
+  />
+)}
         </div>
       </div>
       

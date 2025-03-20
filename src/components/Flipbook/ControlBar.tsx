@@ -4,6 +4,8 @@
 import React from 'react';
 import { ControlBarProps } from './types';
 import { BsGrid3X3Gap } from 'react-icons/bs';
+import { usePathname } from 'next/navigation';
+import { getTranslation } from '@/utils/translations';
 
 const ControlBar: React.FC<ControlBarProps> = ({
   zoom,
@@ -12,10 +14,33 @@ const ControlBar: React.FC<ControlBarProps> = ({
   onDownload,
   onToggleFullscreen,
   onGoHome,
-  onToggleThumbnails, // New prop
+  onToggleThumbnails,
   isFullscreen,
-  showThumbnails // New prop
+  showThumbnails
 }) => {
+  const pathname = usePathname();
+  
+  // Get current language from pathname
+  const getCurrentLanguage = () => {
+    if (pathname.startsWith('/en')) return 'en';
+    if (pathname.startsWith('/id')) return 'id';
+    if (pathname.startsWith('/jp')) return 'jp';
+    return 'en'; // Default to English
+  };
+  
+  const currentLanguage = getCurrentLanguage();
+  
+  // Get translated labels
+  const homeText = getTranslation('home', currentLanguage);
+  const thumbnailsText = getTranslation('thumbnails', currentLanguage);
+  const zoomInText = getTranslation('zoomIn', currentLanguage);
+  const zoomOutText = getTranslation('zoomOut', currentLanguage);
+  const downloadText = getTranslation('download', currentLanguage);
+  const fullscreenText = getTranslation(
+    isFullscreen ? 'exitFullscreen' : 'fullscreen', 
+    currentLanguage
+  );
+  
   // Gaya untuk control bar
   const controlBarStyle: React.CSSProperties = {
     display: 'flex',
@@ -83,7 +108,8 @@ const ControlBar: React.FC<ControlBarProps> = ({
         <button
           onClick={onGoHome}
           style={buttonStyle}
-          aria-label="Go to Cover"
+          aria-label={homeText}
+          title={homeText}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -95,7 +121,8 @@ const ControlBar: React.FC<ControlBarProps> = ({
         <button
           onClick={onToggleThumbnails}
           style={showThumbnails ? activeButtonStyle : buttonStyle}
-          aria-label={showThumbnails ? "Hide Thumbnails" : "Show Thumbnails"}
+          aria-label={thumbnailsText}
+          title={thumbnailsText}
         >
           <BsGrid3X3Gap size={18} />
         </button>
@@ -105,7 +132,8 @@ const ControlBar: React.FC<ControlBarProps> = ({
           onClick={onZoomOut}
           disabled={zoom <= 0.5}
           style={zoom <= 0.5 ? disabledButtonStyle : buttonStyle}
-          aria-label="Zoom Out"
+          aria-label={zoomOutText}
+          title={zoomOutText}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -123,7 +151,8 @@ const ControlBar: React.FC<ControlBarProps> = ({
           onClick={onZoomIn}
           disabled={zoom >= 2}
           style={zoom >= 2 ? disabledButtonStyle : buttonStyle}
-          aria-label="Zoom In"
+          aria-label={zoomInText}
+          title={zoomInText}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -135,7 +164,8 @@ const ControlBar: React.FC<ControlBarProps> = ({
         <button
           onClick={onDownload}
           style={buttonStyle}
-          aria-label="Download PDF"
+          aria-label={downloadText}
+          title={downloadText}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M21 15V16.2C21 17.8802 21 18.7202 20.673 19.362C20.3854 19.9265 19.9265 20.3854 19.362 20.673C18.7202 21 17.8802 21 16.2 21H7.8C6.11984 21 5.27976 21 4.63803 20.673C4.07354 20.3854 3.6146 19.9265 3.32698 19.362C3 18.7202 3 17.8802 3 16.2V15M17 10L12 15M12 15L7 10M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -146,7 +176,8 @@ const ControlBar: React.FC<ControlBarProps> = ({
         <button
           onClick={onToggleFullscreen}
           style={buttonStyle}
-          aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+          aria-label={fullscreenText}
+          title={fullscreenText}
         >
           {isFullscreen ? (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

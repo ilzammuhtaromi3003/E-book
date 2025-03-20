@@ -6,6 +6,7 @@ export interface PageProps {
   isPanoramaLeft?: boolean;
   isPanoramaRight?: boolean;
   isActive?: boolean; // Add this property to control video playback
+  lang?: string;     // Add language prop
 }
 
 export interface BottomIndicatorProps {
@@ -28,9 +29,9 @@ export interface ControlBarProps {
   onDownload: () => void;
   onToggleFullscreen: () => void;
   onGoHome: () => void;
-  onToggleThumbnails: () => void; // New prop
+  onToggleThumbnails: () => void;
   isFullscreen: boolean;
-  showThumbnails: boolean; // New prop
+  showThumbnails: boolean;
 }
 
 export interface NavbarProps {
@@ -45,4 +46,12 @@ export interface ThumbnailsProps {
   onPageSelect: (pageNumber: number) => void;
   totalPages: number;
   currentPage: number;
+}
+
+export interface FlipbookProps {
+  lang?: string;
+}
+
+export interface CoverProps {
+  lang?: string;
 }

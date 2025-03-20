@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { IoMdClose } from 'react-icons/io';
+import { usePathname } from 'next/navigation';
+import { getTranslation } from '@/utils/translations';
 
 interface ThumbnailsProps {
   isOpen: boolean;
@@ -19,6 +21,17 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
   currentPage
 }) => {
   const [animation, setAnimation] = useState<string>("sidebar-closed");
+  const pathname = usePathname();
+  
+  // Get current language from pathname
+  const getCurrentLanguage = () => {
+    if (pathname.startsWith('/en')) return 'en';
+    if (pathname.startsWith('/id')) return 'id';
+    if (pathname.startsWith('/jp')) return 'jp';
+    return 'en'; // Default to English
+  };
+  
+  const currentLanguage = getCurrentLanguage();
   
   // Handle animation on open/close
   useEffect(() => {
@@ -81,6 +94,11 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
   // Don't render anything if sidebar is completely closed
   if (animation === "sidebar-closed") return null;
 
+  // Get translated text
+  const thumbnailsTitle = getTranslation('thumbnailsTitle', currentLanguage);
+  const coverText = getTranslation('cover', currentLanguage);
+  const panoramaText = getTranslation('panorama', currentLanguage);
+
   // Render Cover
   const renderCover = () => (
     <div className="w-full mb-3 flex justify-center">
@@ -96,7 +114,7 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
             loading="lazy"
           />
         </div>
-        <div className="text-center py-1 text-xs text-gray-600">Cover</div>
+        <div className="text-center py-1 text-xs text-gray-600">{coverText}</div>
       </div>
     </div>
   );
@@ -114,7 +132,7 @@ const renderPanorama = () => (
           loading="lazy"
         />
       </div>
-      <div className="text-center py-1 text-xs text-gray-600">Panorama 31-37</div>
+      <div className="text-center py-1 text-xs text-gray-600">{panoramaText} 31-37</div>
     </div>
   </div>
 );
@@ -283,7 +301,7 @@ const renderPanorama = () => (
     >
       {/* Header */}
       <div className="flex justify-between items-center px-4 py-2.5">
-        <h2 className="text-base font-medium text-gray-800">Thumbnails</h2>
+        <h2 className="text-base font-medium text-gray-800">{thumbnailsTitle}</h2>
         <button 
           onClick={onClose}
           className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100"

@@ -2,6 +2,8 @@
 
 // components/Flipbook/Navbar.tsx
 import React, { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { getTranslation } from '@/utils/translations';
 
 interface NavbarProps {
   pageDisplay: string;
@@ -12,6 +14,39 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) => {
   const [inputValue, setInputValue] = useState<string>('');
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  
+  // Get current language from pathname
+  const getCurrentLanguage = () => {
+    if (pathname.startsWith('/en')) return 'en';
+    if (pathname.startsWith('/id')) return 'id';
+    if (pathname.startsWith('/jp')) return 'jp';
+    return 'en'; // Default to English
+  };
+  
+  const [currentLanguage, setCurrentLanguage] = useState<string>('en');
+  
+  useEffect(() => {
+    setCurrentLanguage(getCurrentLanguage());
+  }, [pathname]);
+  
+  // Language switching function
+  const switchLanguage = (lang: string) => {
+    // Get the path after the language prefix
+    let remainingPath = pathname;
+    const langs = ['/en', '/id', '/jp'];
+    
+    for (const l of langs) {
+      if (pathname.startsWith(l)) {
+        remainingPath = pathname.substring(l.length) || '/';
+        break;
+      }
+    }
+    
+    // Navigate to the new language path
+    router.push(`/${lang}${remainingPath === '/' ? '' : remainingPath}`);
+  };
   
   // Format halaman untuk menampilkan halaman berpasangan
   const formatPageDisplay = (pageDisplay: string): string => {
@@ -96,6 +131,23 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
   const handleDisplayClick = () => {
     setIsEditing(true);
   };
+
+  // Gunakan fungsi getTranslation untuk teks berdasarkan bahasa
+  const bookTitleText = getTranslation('bookTitle', currentLanguage);
+  const pageText = getTranslation('pageLabel', currentLanguage);
+
+  // Language button style
+  const langButtonStyle = (lang: string) => ({
+    padding: '0.35rem 0.6rem',
+    borderRadius: '0.25rem',
+    fontSize: '0.85rem',
+    fontWeight: currentLanguage === lang ? '600' : '400',
+    backgroundColor: currentLanguage === lang ? '#4A90E2' : 'transparent',
+    color: currentLanguage === lang ? 'white' : '#4A90E2',
+    border: currentLanguage === lang ? 'none' : '1px solid #4A90E2',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
+  });
   
   return (
     <div className="w-full bg-white shadow-md px-4 py-2 flex justify-between items-center">
@@ -104,12 +156,14 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
         <img src="/logo.png" alt="Logo" className="h-18 w-auto mr-2" />
       </div>
       
-      {/* Informasi di kanan */}
+      {/* Informasi di tengah */}
       <div className="flex items-center">
-        <div className="text-gray-800 font-medium mr-4">75 Stories of the Hong Kong Housing Society</div>
+        <div className="text-gray-800 font-medium mr-4">
+          {bookTitleText}
+        </div>
         
         <div className="flex items-center border rounded px-2 py-1">
-          <span className="mr-2">Page:</span>
+          <span className="mr-2">{pageText}</span>
           {isEditing ? (
             <input
               type="text"
@@ -125,11 +179,33 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
               onClick={handleDisplayClick} 
               className="w-24 px-2 py-1 text-center cursor-text"
             >
-              {inputValue} {/* Menggunakan inputValue yang sudah diformat */}
+              {inputValue}
             </span>
           )}
           <span className="ml-2">/ {totalPages}</span>
         </div>
+      </div>
+      
+      {/* Language buttons at right side */}
+      <div className="flex items-center space-x-2">
+        <button 
+          onClick={() => switchLanguage('en')}
+          style={langButtonStyle('en')}
+        >
+          EN
+        </button>
+        <button 
+          onClick={() => switchLanguage('id')}
+          style={langButtonStyle('id')}
+        >
+          ID
+        </button>
+        <button 
+          onClick={() => switchLanguage('jp')}
+          style={langButtonStyle('jp')}
+        >
+          JP
+        </button>
       </div>
     </div>
   );

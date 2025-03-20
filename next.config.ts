@@ -1,3 +1,4 @@
+// next.config.ts
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -13,6 +14,11 @@ const nextConfig: NextConfig = {
 
     return config;
   },
+  
+  // Tambahkan konfigurasi Turbopack kosong untuk menghilangkan peringatan
+  experimental: {
+    turbo: {}
+  }
 };
 
 export default nextConfig;

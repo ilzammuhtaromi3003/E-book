@@ -3,13 +3,19 @@
 // components/Flipbook/PanoramaSlider.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { panoramaState } from './PanoramaState';
+import { getTranslation } from '@/utils/translations';
 
 interface PanoramaSliderProps {
   scrollValue: number;
   setScrollValue: (value: number) => void;
+  lang?: string; // Tambahkan prop lang
 }
 
-const PanoramaSlider: React.FC<PanoramaSliderProps> = ({ scrollValue, setScrollValue }) => {
+const PanoramaSlider: React.FC<PanoramaSliderProps> = ({ 
+  scrollValue, 
+  setScrollValue,
+  lang = 'en' // Default ke bahasa Inggris jika tidak ada
+}) => {
   // State untuk menampilkan tooltip
   const [showTooltip, setShowTooltip] = useState(true);
   const [tooltipPosition, setTooltipPosition] = useState({ left: 10, arrowLeft: 18 });
@@ -51,6 +57,9 @@ const PanoramaSlider: React.FC<PanoramaSliderProps> = ({ scrollValue, setScrollV
     return unregister;
   }, [setScrollValue]);
   
+  // Dapatkan teks tooltip sesuai bahasa
+  const tooltipText = getTranslation('dragToRight', lang);
+  
   return (
     <div 
       className="panorama-slider-container" 
@@ -89,7 +98,7 @@ const PanoramaSlider: React.FC<PanoramaSliderProps> = ({ scrollValue, setScrollV
             transformOrigin: 'bottom left'
           }}
         >
-          PLEASE DRAG IT TO RIGHT
+          {tooltipText}
           <div
             style={{
               position: 'absolute',
