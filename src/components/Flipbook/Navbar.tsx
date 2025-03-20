@@ -2,8 +2,9 @@
 
 // components/Flipbook/Navbar.tsx
 import React, { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { getTranslation } from '@/utils/translations';
+import LanguageSwitcher from '../LanguageSwitcher';
 
 interface NavbarProps {
   pageDisplay: string;
@@ -14,7 +15,6 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) => {
   const [inputValue, setInputValue] = useState<string>('');
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const router = useRouter();
   const pathname = usePathname();
   
   // Get current language from pathname
@@ -30,23 +30,6 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
   useEffect(() => {
     setCurrentLanguage(getCurrentLanguage());
   }, [pathname]);
-  
-  // Language switching function
-  const switchLanguage = (lang: string) => {
-    // Get the path after the language prefix
-    let remainingPath = pathname;
-    const langs = ['/en', '/id', '/jp'];
-    
-    for (const l of langs) {
-      if (pathname.startsWith(l)) {
-        remainingPath = pathname.substring(l.length) || '/';
-        break;
-      }
-    }
-    
-    // Navigate to the new language path
-    router.push(`/${lang}${remainingPath === '/' ? '' : remainingPath}`);
-  };
   
   // Format halaman untuk menampilkan halaman berpasangan
   const formatPageDisplay = (pageDisplay: string): string => {
@@ -135,19 +118,6 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
   // Gunakan fungsi getTranslation untuk teks berdasarkan bahasa
   const bookTitleText = getTranslation('bookTitle', currentLanguage);
   const pageText = getTranslation('pageLabel', currentLanguage);
-
-  // Language button style
-  const langButtonStyle = (lang: string) => ({
-    padding: '0.35rem 0.6rem',
-    borderRadius: '0.25rem',
-    fontSize: '0.85rem',
-    fontWeight: currentLanguage === lang ? '600' : '400',
-    backgroundColor: currentLanguage === lang ? '#4A90E2' : 'transparent',
-    color: currentLanguage === lang ? 'white' : '#4A90E2',
-    border: currentLanguage === lang ? 'none' : '1px solid #4A90E2',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease'
-  });
   
   return (
     <div className="w-full bg-white shadow-md px-4 py-2 flex justify-between items-center">
@@ -157,8 +127,8 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
       </div>
       
       {/* Informasi di tengah */}
-      <div className="flex items-center">
-        <div className="text-gray-800 font-medium mr-4">
+      <div className="flex items-center flex-grow justify-center">
+        <div className="text-gray-800 font-medium mr-4 text-center">
           {bookTitleText}
         </div>
         
@@ -186,26 +156,9 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
         </div>
       </div>
       
-      {/* Language buttons at right side */}
-      <div className="flex items-center space-x-2">
-        <button 
-          onClick={() => switchLanguage('en')}
-          style={langButtonStyle('en')}
-        >
-          EN
-        </button>
-        <button 
-          onClick={() => switchLanguage('id')}
-          style={langButtonStyle('id')}
-        >
-          ID
-        </button>
-        <button 
-          onClick={() => switchLanguage('jp')}
-          style={langButtonStyle('jp')}
-        >
-          JP
-        </button>
+      {/* Language switcher di kanan */}
+      <div className="flex-shrink-0">
+        <LanguageSwitcher />
       </div>
     </div>
   );
