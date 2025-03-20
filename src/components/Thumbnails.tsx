@@ -101,25 +101,23 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
     </div>
   );
 
-  // Render Panorama
-  const renderPanorama = () => (
-    <div className="w-full mb-3 flex justify-center">
-      <div className="w-[calc(50%-6px)] cursor-pointer thumbnail-item">
-        <div 
-          className="thumbnail-image-container"
-          onClick={() => handleThumbnailClick(31)} // Klik pada panorama akan ke halaman 31
-        >
-          <img
-            src={getImagePath(31)}
-            alt="Panorama 31-37"
-            className="w-full h-auto object-cover"
-            loading="lazy"
-          />
-        </div>
-        <div className="text-center py-1 text-xs text-gray-600">Panorama 31-37</div>
+// Render Panorama with improved styling
+const renderPanorama = () => (
+  <div className="w-full mb-3">
+    <div className="cursor-pointer thumbnail-item w-full"
+      onClick={() => handleThumbnailClick(31)}
+    >
+      <div className="panorama-thumbnail-container">
+        <img
+          src={getImagePath(31)}
+          alt="Panorama 31-37"
+          loading="lazy"
+        />
       </div>
+      <div className="text-center py-1 text-xs text-gray-600">Panorama 31-37</div>
     </div>
-  );
+  </div>
+);
   
   // Render halaman berpasangan (sebelum panorama)
   const renderPagePairs = () => {
