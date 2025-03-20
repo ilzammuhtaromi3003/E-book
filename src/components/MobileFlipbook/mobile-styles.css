@@ -1,0 +1,284 @@
+/* components/MobileFlipbook/mobile-styles.css */
+
+/* Base container */
+.mobile-flipbook-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f5f5f5;
+    overflow: hidden;
+  }
+  
+  .mobile-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+  }
+  
+  /* Scrollable content area */
+  .mobile-scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch; /* Better scroll on iOS */
+    scrollbar-width: thin; /* Firefox */
+    padding-bottom: 80px; /* Extra padding for floating controls */
+    transition: transform 0.3s ease;
+  }
+  
+  /* Scrollbar styling */
+  .mobile-scrollable-content::-webkit-scrollbar {
+    width: 5px;
+  }
+  
+  .mobile-scrollable-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .mobile-scrollable-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+  }
+  
+  .mobile-scrollable-content::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+  }
+  
+  /* Content header */
+  .mobile-content-header {
+    padding: 15px 20px;
+    text-align: center;
+    background-color: white;
+    border-bottom: 1px solid #eaeaea;
+    margin-bottom: 20px;
+  }
+  
+  .mobile-content-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 5px 0;
+    color: #333;
+  }
+  
+  .mobile-content-header p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+  }
+  
+  /* Pages container */
+  .mobile-pages-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    gap: 30px;
+  }
+  
+  /* Individual page */
+  .mobile-page-item {
+    width: 95%;
+    max-width: 500px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+    position: relative;
+    min-height: 100px; /* Add a minimum height */
+    aspect-ratio: 3/4; /* Fixed aspect ratio - adjust as needed based on your book's dimensions */
+  }
+  
+  /* Page image */
+  .mobile-page-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* This ensures the image fills the container */
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  
+  /* Media overlays (for GIFs, videos, buttons) */
+  .mobile-media-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none; /* Allow clicks to pass through to page */
+  }
+  
+  /* But enable pointer events for the actual media elements */
+  .mobile-media-overlay * {
+    pointer-events: auto;
+  }
+  
+  /* Specific styling for Video Button container */
+  .video-button-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding: 20px;
+  }
+  
+  /* Page number */
+  .mobile-page-number {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: rgba(0,0,0,0.5);
+    color: white;
+    padding: 5px 10px;
+    font-size: 12px;
+    border-bottom-left-radius: 8px;
+    z-index: 20; /* Above media overlay */
+  }
+  
+  /* PERBAIKAN: Panorama styles - menggunakan aspect ratio yang sama dengan halaman biasa */
+  .mobile-panorama-item {
+    width: 95%;
+    max-width: 500px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 3/4; /* Gunakan aspect ratio yang sama dengan halaman lain */
+  }
+  
+  .mobile-panorama-container {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+  
+  .mobile-panorama-image {
+    height: 100%;
+    width: auto;
+    max-width: none;
+  }
+  
+  .panorama-video-button {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 20px;
+  }
+  
+  .mobile-panorama-label {
+    background-color: rgba(74, 144, 226, 0.7);
+  }
+  
+  /* Video styles */
+  .mobile-video {
+    max-width: 100%;
+    max-height: 100%;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  }
+  
+  /* GIF styles */
+  .mobile-gif {
+    pointer-events: none;
+  }
+  
+  /* Floating controls */
+  .mobile-floating-controls {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: white;
+    border-radius: 50px;
+    padding: 8px 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 100;
+  }
+  
+  .mobile-floating-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #e0e0e0;
+    background-color: #f8f9fa;
+    color: #4A90E2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .mobile-floating-button:active {
+    transform: scale(0.95);
+    background-color: #e9ecef;
+  }
+  
+  .mobile-floating-button.active {
+    background-color: #e6f0ff;
+    border: 1px solid #90caf9;
+    color: #0d47a1;
+  }
+  
+  .mobile-zoom-indicator {
+    min-width: 42px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4b5563;
+  }
+  
+  /* Back to top button */
+  .mobile-back-to-top {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: #4A90E2;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    cursor: pointer;
+    border: none;
+    z-index: 100;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  .mobile-back-to-top:active {
+    transform: scale(0.95);
+  }
+  
+  /* Animation */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Integration with VideoButton, AutoplayVideo components */
+  .mobile-page-item .video-play-button,
+  .mobile-panorama-item .video-play-button {
+    z-index: 50;
+  }

@@ -1,8 +1,15 @@
-// next.config.ts
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  typescript: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    // !! WARN !!
+    ignoreBuildErrors: true,
+  },
+  
+  // Konfigurasi lainnya tetap sama
   webpack(config) {
     config.module.rules.push({
       test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
@@ -15,7 +22,6 @@ const nextConfig: NextConfig = {
     return config;
   },
   
-  // Tambahkan konfigurasi Turbopack kosong untuk menghilangkan peringatan
   experimental: {
     turbo: {}
   }

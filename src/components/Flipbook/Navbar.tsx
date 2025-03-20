@@ -1,6 +1,5 @@
 "use client";
 
-// components/Flipbook/Navbar.tsx
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { getTranslation } from '@/utils/translations';
@@ -15,6 +14,7 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) => {
   const [inputValue, setInputValue] = useState<string>('');
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [windowWidth, setWindowWidth] = useState<number>(0);
   const pathname = usePathname();
   
   // Get current language from pathname
@@ -26,6 +26,24 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
   };
   
   const [currentLanguage, setCurrentLanguage] = useState<string>('en');
+  
+  // Effect untuk mendeteksi lebar layar
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    // Set initial width
+    handleResize();
+    
+    // Tambahkan event listener
+    window.addEventListener('resize', handleResize);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
   
   useEffect(() => {
     setCurrentLanguage(getCurrentLanguage());
@@ -119,42 +137,57 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
   const bookTitleText = getTranslation('bookTitle', currentLanguage);
   const pageText = getTranslation('pageLabel', currentLanguage);
   
+  // Tentukan tampilan berdasarkan lebar layar
+  const isMobile = windowWidth < 768;
+  const isTablet = windowWidth >= 768 && windowWidth < 1024;
+  
   return (
     <div className="w-full bg-white shadow-md px-4 py-2 flex justify-between items-center">
       {/* Logo di kiri */}
       <div className="flex items-center">
-        <img src="/logo.png" alt="Logo" className="h-18 w-auto mr-2" />
+        <img src="/logo.png" alt="Logo" className="h-20 w-auto mr-2" />
       </div>
       
-      {/* Informasi di tengah */}
-      <div className="flex items-center flex-grow justify-center">
-        <div className="text-gray-800 font-medium mr-4 text-center">
-          {bookTitleText}
+      {/* Informasi di tengah - tampilkan berbeda untuk mobile dan tablet */}
+      {!isMobile && (
+        <div className="flex items-center flex-grow justify-center">
+          <div className="text-gray-800 font-medium mr-4 text-center">
+            {bookTitleText}
+          </div>
+          
+          <div className="flex items-center border rounded px-2 py-1">
+            <span className="mr-2">{pageText}</span>
+            {isEditing ? (
+              <input
+                type="text"
+                value={inputValue}
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                onKeyDown={handleKeyDown}
+                className="w-24 px-2 py-1 text-center border-none focus:outline-none"
+                autoFocus
+              />
+            ) : (
+              <span 
+                onClick={handleDisplayClick} 
+                className="w-24 px-2 py-1 text-center cursor-text"
+              >
+                {inputValue}
+              </span>
+            )}
+            <span className="ml-2">/ {totalPages}</span>
+          </div>
         </div>
-        
-        <div className="flex items-center border rounded px-2 py-1">
-          <span className="mr-2">{pageText}</span>
-          {isEditing ? (
-            <input
-              type="text"
-              value={inputValue}
-              onChange={handleInputChange}
-              onBlur={handleInputBlur}
-              onKeyDown={handleKeyDown}
-              className="w-24 px-2 py-1 text-center border-none focus:outline-none"
-              autoFocus
-            />
-          ) : (
-            <span 
-              onClick={handleDisplayClick} 
-              className="w-24 px-2 py-1 text-center cursor-text"
-            >
-              {inputValue}
-            </span>
-          )}
-          <span className="ml-2">/ {totalPages}</span>
+      )}
+      
+      {/* Untuk mobile, hanya tampilkan judul buku */}
+      {isMobile && (
+        <div className="flex-grow text-center">
+          <div className="text-gray-800 font-medium text-sm">
+            {bookTitleText}
+          </div>
         </div>
-      </div>
+      )}
       
       {/* Language switcher di kanan */}
       <div className="flex-shrink-0">

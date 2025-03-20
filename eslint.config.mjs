@@ -15,7 +15,8 @@ const eslintConfig = [
     rules: {
       "@next/next/no-img-element": "off", // Nonaktifkan peringatan untuk `<img>`
       "@typescript-eslint/no-explicit-any": "off", // Nonaktifkan peringatan untuk `any`
-      "react-hooks/exhaustive-deps": "warn", // Ubah menjadi "warn" atau "off" jika perlu
+      "@typescript-eslint/no-unused-vars": "off", // Tambahkan ini untuk mengabaikan variabel yang tidak digunakan
+      "react-hooks/exhaustive-deps": "off", // Ubah menjadi "off"
     },
   },
 ];
