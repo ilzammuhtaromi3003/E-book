@@ -66,7 +66,7 @@ const PanoramaSlider: React.FC<PanoramaSliderProps> = ({
       style={{
         position: 'absolute',
         bottom: '-20px',
-        left: '50%',
+        left: '30%',
         transform: 'translateX(-50%)',
         width: '80%',
         maxWidth: '450px',
