@@ -6,7 +6,12 @@ import Navbar from '../Flipbook/Navbar';
 import Thumbnails from '../Thumbnails';
 import VideoButton from '../VideoButton';
 import { FiZoomIn, FiZoomOut, FiMaximize2, FiMinimize2, FiArrowUp, FiGrid, FiDownload } from 'react-icons/fi';
+import { getTranslation } from '@/utils/translations';
+import { usePathname } from 'next/navigation';
 import './mobile-styles.css';
+
+// Key for thumbnails state in localStorage
+const THUMBNAILS_STATE_KEY = 'mobile_flipbook_thumbnails_state';
 
 interface MobileFlipbookProps {
   lang?: string;
@@ -17,10 +22,62 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
   const [zoom, setZoom] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
-  const [showThumbnails, setShowThumbnails] = useState(false);
+  const pathname = usePathname();
+  
+  // For preventing thumbnails from flashing during language changes
+  const [isLanguageChanging, setIsLanguageChanging] = useState(false);
+  const previousLang = useRef(lang);
+  
+  // Get current language from pathname - same approach as in Thumbnails component
+  const getCurrentLanguage = () => {
+    if (pathname.startsWith('/en')) return 'en';
+    if (pathname.startsWith('/id')) return 'id';
+    if (pathname.startsWith('/jp')) return 'jp';
+    return 'en'; // Default to English
+  };
+  
+  const [currentLanguage, setCurrentLanguage] = useState(getCurrentLanguage());
+  
+  // Initialize thumbnails state from localStorage
+  const [showThumbnails, setShowThumbnails] = useState<boolean>(() => {
+    // Only run in the client
+    if (typeof window !== 'undefined') {
+      const savedState = localStorage.getItem(THUMBNAILS_STATE_KEY);
+      return savedState ? JSON.parse(savedState) === true : false;
+    }
+    return false;
+  });
+  
   const [currentPage, setCurrentPage] = useState(0); // Track active page for thumbnails
   const flipbookContainerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  
+  // Update language when pathname changes
+  useEffect(() => {
+    setCurrentLanguage(getCurrentLanguage());
+  }, [pathname]);
+  
+  // Effect to detect language changes
+  useEffect(() => {
+    if (previousLang.current !== currentLanguage) {
+      setIsLanguageChanging(true);
+      
+      // Reset after a short delay
+      const timer = setTimeout(() => {
+        setIsLanguageChanging(false);
+        previousLang.current = currentLanguage;
+      }, 500); // Delay to allow rendering to complete
+      
+      return () => clearTimeout(timer);
+    }
+  }, [currentLanguage]);
+  
+  // Save thumbnails state to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(THUMBNAILS_STATE_KEY, JSON.stringify(showThumbnails));
+    }
+  }, [showThumbnails]);
   
   // Zoom handlers
   const handleZoomIn = useCallback(() => {
@@ -72,8 +129,11 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
   
   // Toggle thumbnails
   const toggleThumbnails = useCallback(() => {
-    setShowThumbnails(prev => !prev);
-  }, []);
+    // Only toggle thumbnails if we're not in the middle of a language change
+    if (!isLanguageChanging) {
+      setShowThumbnails(prev => !prev);
+    }
+  }, [isLanguageChanging]);
   
   // Scroll to top
   const scrollToTop = useCallback(() => {
@@ -101,8 +161,7 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
       }
     }
     
-    // Close thumbnails after navigation
-    setShowThumbnails(false);
+    // Don't close thumbnails after navigation - keep them open
   }, [scrollToTop]);
   
   // Handler untuk mendeteksi scroll dan menampilkan tombol back-to-top
@@ -219,12 +278,15 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
   const renderAllPages = () => {
     const pages = [];
     
+    // Get translated text for cover
+    const coverText = getTranslation('cover', currentLanguage);
+    
     // Cover page
     pages.push(
       <div key="cover" id="page-0" className="mobile-page-item">
         <img
           src="/tinggi/page_Page_001.jpg"
-          alt="Cover"
+          alt={coverText}
           className="mobile-page-image"
         />
       </div>
@@ -236,12 +298,15 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
       // Untuk halaman 30 (i=30), kita perlu ambil page_Page_031.jpg
       const fileNumber = i + 1; // Page 1 = file 002, Page 30 = file 031
       
+      // Get page label translation
+      const pageText = getTranslation('pageLabel', currentLanguage).replace(':', '');
+      
       pages.push(
         <div key={`page-${i}`} id={`page-${i}`} className="mobile-page-item">
-          <div className="mobile-page-number">{i}</div>
+          <div className="mobile-page-number">{pageText} {i}</div>
           <img
             src={`/tinggi/page_Page_${String(fileNumber).padStart(3, "0")}.jpg`}
-            alt={`Page ${i}`}
+            alt={`${pageText} ${i}`}
             className="mobile-page-image"
             loading="lazy"
           />
@@ -312,14 +377,18 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
       );
     }
     
+    // Get panorama translation
+    const panoramaText = getTranslation('panorama', currentLanguage);
+    const panoramaLabelText = getTranslation('panoramaPages', currentLanguage);
+    
     // Panorama page - bentuk lebar khusus dengan tinggi yang sama dengan halaman lain
     pages.push(
       <div key="panorama" id="panorama-page" className="mobile-panorama-item">
-        <div className="mobile-page-number mobile-panorama-label">31-37 (Panorama)</div>
+        <div className="mobile-page-number mobile-panorama-label">{panoramaLabelText}</div>
         <div className="mobile-panorama-container">
           <img
             src="/tinggi/page_Page_032-038.jpg"
-            alt="Panorama Pages 31-37"
+            alt={`${panoramaText} 31-37`}
             className="mobile-panorama-image"
             loading="lazy"
           />
@@ -335,14 +404,17 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
       </div>
     );
     
+    // Get page label translation
+    const pageText = getTranslation('pageLabel', currentLanguage).replace(':', '');
+    
     // Pages after panorama (38-162)
     for (let i = 38; i <= 162; i++) {
       pages.push(
         <div key={`page-${i}`} id={`page-${i}`} className="mobile-page-item">
-          <div className="mobile-page-number">{i}</div>
+          <div className="mobile-page-number">{pageText} {i}</div>
           <img
             src={`/tinggi/page_Page_${String(i + 1).padStart(3, "0")}.jpg`}
-            alt={`Page ${i}`}
+            alt={`${pageText} ${i}`}
             className="mobile-page-image"
             loading="lazy"
           />
@@ -360,7 +432,7 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
     >
       {/* Navbar - untuk display halaman dan navigasi */}
       <Navbar 
-        pageDisplay={currentPage === 0 ? "Cover" : currentPage.toString()} 
+        pageDisplay={currentPage === 0 ? getTranslation('cover', currentLanguage) : currentPage.toString()} 
         totalPages={totalPages}
         onGoToPage={goToPage}
       />
@@ -374,10 +446,10 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
           transform: `scale(${zoom})` 
         }}
       >
-        {/* Header info */}
+        {/* Header info - translated */}
         <div className="mobile-content-header">
-          <h2>Scroll Mode</h2>
-          <p>Scroll ke bawah untuk membaca semua halaman</p>
+          <h2>{getTranslation('scrollMode', currentLanguage)}</h2>
+          <p>{getTranslation('scrollInstruction', currentLanguage)}</p>
         </div>
         
         {/* All pages rendered vertically */}
@@ -386,34 +458,42 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
         </div>
       </div>
       
-      {/* Floating controls */}
+      {/* Floating controls with translated tooltips */}
       <div className="mobile-floating-controls">
-        <button className="mobile-floating-button" onClick={handleZoomOut} title="Zoom Out">
+        <button 
+          className="mobile-floating-button" 
+          onClick={handleZoomOut} 
+          title={getTranslation('zoomOut', currentLanguage)}
+        >
           <FiZoomOut size={20} />
         </button>
         <div className="mobile-zoom-indicator">{Math.round(zoom * 100)}%</div>
-        <button className="mobile-floating-button" onClick={handleZoomIn} title="Zoom In">
+        <button 
+          className="mobile-floating-button" 
+          onClick={handleZoomIn} 
+          title={getTranslation('zoomIn', currentLanguage)}
+        >
           <FiZoomIn size={20} />
         </button>
         {/* Download button */}
         <button 
           className="mobile-floating-button" 
           onClick={handleDownload} 
-          title="Download PDF"
+          title={getTranslation('download', currentLanguage)}
         >
           <FiDownload size={20} />
         </button>
         <button 
           className="mobile-floating-button" 
           onClick={toggleFullscreen} 
-          title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+          title={isFullscreen ? getTranslation('exitFullscreen', currentLanguage) : getTranslation('fullscreen', currentLanguage)}
         >
           {isFullscreen ? <FiMinimize2 size={20} /> : <FiMaximize2 size={20} />}
         </button>
         <button 
           className={`mobile-floating-button ${showThumbnails ? 'active' : ''}`} 
           onClick={toggleThumbnails}
-          title="Thumbnails"
+          title={getTranslation('thumbnails', currentLanguage)}
         >
           <FiGrid size={20} />
         </button>
@@ -424,20 +504,22 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
         <button 
           className="mobile-back-to-top"
           onClick={scrollToTop}
-          title="Back to Top"
+          title={getTranslation('home', currentLanguage)}
         >
           <FiArrowUp size={24} />
         </button>
       )}
       
-      {/* Thumbnails */}
-      <Thumbnails 
-        isOpen={showThumbnails}
-        onClose={() => setShowThumbnails(false)}
-        onPageSelect={goToPage}
-        totalPages={totalPages}
-        currentPage={currentPage}
-      />
+      {/* Thumbnails - Only render if not in language transition */}
+      {!isLanguageChanging && (
+        <Thumbnails 
+          isOpen={showThumbnails}
+          onClose={() => setShowThumbnails(false)}
+          onPageSelect={goToPage}
+          totalPages={totalPages}
+          currentPage={currentPage}
+        />
+      )}
     </div>
   );
 };

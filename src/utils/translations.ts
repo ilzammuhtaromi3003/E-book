@@ -85,7 +85,23 @@ export interface Translations {
       en: "Close",
       id: "Tutup",
       jp: "閉じる"
-    }
+    },
+    scrollMode: {
+        en: "Scroll Mode",
+        id: "Mode Gulir",
+        jp: "スクロールモード"
+      },
+      scrollInstruction: {
+        en: "Scroll down to read all pages",
+        id: "Gulir ke bawah untuk membaca semua halaman",
+        jp: "下にスクロールしてすべてのページを読む"
+      },
+      panoramaPages: {
+        en: "31-37 (Panorama)",
+        id: "31-37 (Panorama)",
+        jp: "31-37 (パノラマ)"
+      }
+    
   };
   
   // Helper function to get a translation
