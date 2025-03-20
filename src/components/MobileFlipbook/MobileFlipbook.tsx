@@ -5,6 +5,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Navbar from '../Flipbook/Navbar';
 import Thumbnails from '../Thumbnails';
 import VideoButton from '../VideoButton';
+import MobileVideo from '../MobileVideo'; // Import the new MobileVideo component
 import { FiZoomIn, FiZoomOut, FiMaximize2, FiMinimize2, FiArrowUp, FiGrid, FiDownload } from 'react-icons/fi';
 import { getTranslation } from '@/utils/translations';
 import { usePathname } from 'next/navigation';
@@ -330,48 +331,27 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
             </div>
           )}
           
-          {/* Video pada halaman 7 */}
+          {/* Video pada halaman 7 - UPDATED to use MobileVideo component with autoplay */}
           {i === 7 && (
-            <div className="mobile-media-overlay">
-              <video
-                src="/video3.mp4"
-                className="mobile-video"
-                controls
-                playsInline
-                onClick={e => e.currentTarget.play().catch(err => console.error(err))}
-                poster="/video-thumbnails/video3.jpg"
-                style={{
-                  position: 'absolute',
-                  top: '20%',
-                  left: '25%',
-                  width: '50%',
-                  height: 'auto',
-                  zIndex: 20,
-                }}
-              />
-            </div>
+            <MobileVideo
+              videoSrc="/video3.mp4"
+              posterSrc="/video-thumbnails/video3.jpg"
+              autoplay={true}
+              position={{ top: '20%', left: '25%' }}
+              dimensions={{ width: '50%', height: 'auto' }}
+            />
           )}
           
-          {/* Video pada halaman 10 */}
+          {/* Video pada halaman 10 - UPDATED with better visual appearance */}
           {i === 10 && (
-            <div className="mobile-media-overlay">
-              <video
-                src="/video2.mp4"
-                className="mobile-video"
-                controls
-                playsInline
-                onClick={e => e.currentTarget.play().catch(err => console.error(err))}
-                poster="/video-thumbnails/video2.jpg"
-                style={{
-                  position: 'absolute',
-                  top: '20%',
-                  left: '25%',
-                  width: '50%',
-                  height: 'auto',
-                  zIndex: 20,
-                }}
-              />
-            </div>
+            <MobileVideo
+              videoSrc="/video2.mp4"
+              posterSrc="/video-thumbnails/video2.jpg"
+              autoplay={false}
+              position={{ top: '20%', left: '25%' }}
+              dimensions={{ width: '50%', height: 'auto' }}
+              usePoster={false} // Gunakan frame pertama video sebagai thumbnail seperti di desktop
+            />
           )}
         </div>
       );
