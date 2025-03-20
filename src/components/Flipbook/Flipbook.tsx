@@ -60,49 +60,60 @@ const Flipbook: React.FC = () => {
   }, []);
 
   // Function to go to specific page with correctly fixed logic
-  const goToPage = useCallback((pageNumber: number) => {
-    if (book.current) {
-      console.log(`Trying to go to page: ${pageNumber}`);
-      
-      // Dispatch custom event for any videos to respond to
-      const pageChangeEvent = new CustomEvent('pageChange', { 
-        detail: { 
-          previousPage: currentPage,
-          targetPage: pageNumber 
-        } 
-      });
-      window.dispatchEvent(pageChangeEvent);
-      
-      // FIXED MAPPING LOGIC:
-      let targetIndex;
-      
-      // Cover is page 1, index 0
-      if (pageNumber === 1) {
-        targetIndex = 0;
-      }
-      // Panorama pages (31-37)
-      else if (pageNumber >= 31 && pageNumber <= 37) {
-        targetIndex = 31;
-        panoramaState.setScrollValue(0);
-      }
-      // Pages after panorama (38+)
-      else if (pageNumber >= 38) {
-        // For pages after panorama, we need to account for the 5 "missing" indices
-        // (7 panorama pages represented by only 2 indices: 31-32)
-        targetIndex = pageNumber - 5; // -5 to account for panorama compression
-      }
-      // Regular pages (2-30)
-      else {
-        // No adjustment for regular pages
-        targetIndex = pageNumber;
-      }
-      
-      console.log(`Page ${pageNumber} maps to book index ${targetIndex}`);
-      
-      // Go to the target page
-      book.current.pageFlip().turnToPage(targetIndex);
+  // Function to go to specific page with correctly fixed logic
+const goToPage = useCallback((pageNumber: number) => {
+  if (book.current) {
+    console.log(`Trying to go to page: ${pageNumber}`);
+    
+    // Dispatch custom event for any videos to respond to
+    const pageChangeEvent = new CustomEvent('pageChange', { 
+      detail: { 
+        previousPage: currentPage,
+        targetPage: pageNumber 
+      } 
+    });
+    window.dispatchEvent(pageChangeEvent);
+    
+    // FIXED MAPPING LOGIC:
+    let targetIndex;
+    
+    // Special handling for page numbers to indices
+    
+    // Cover (page 0)
+    if (pageNumber === 0) {
+      targetIndex = 0; // Cover is at index 0
     }
-  }, [currentPage]);
+    // Page 1 should show pages 1-2
+    else if (pageNumber === 1) {
+      targetIndex = 1; // Index 1 shows pages 1-2
+    }
+    // Page 29 should show pages 29-30
+    else if (pageNumber === 28) {
+      targetIndex = 29; // Index 29 shows pages 29-30
+    }
+    // Panorama pages (31-37)
+    else if (pageNumber >= 31 && pageNumber <= 37) {
+      targetIndex = 31;
+      panoramaState.setScrollValue(0);
+    }
+    // Pages after panorama (38+)
+    else if (pageNumber >= 38) {
+      // For pages after panorama, we need to account for the 5 "missing" indices
+      // (7 panorama pages represented by only 2 indices: 31-32)
+      targetIndex = pageNumber - 5; // -5 to account for panorama compression
+    }
+    // Regular pages (2-30, except 29)
+    else {
+      // Regular page mapping
+      targetIndex = pageNumber;
+    }
+    
+    console.log(`Page ${pageNumber} maps to book index ${targetIndex}`);
+    
+    // Go to the target page
+    book.current.pageFlip().turnToPage(targetIndex);
+  }
+}, [currentPage]);
 
   // Function to go back to cover
   const goToHome = useCallback(() => {

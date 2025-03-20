@@ -74,15 +74,14 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
   const handleThumbnailClick = (pageNumber: number) => {
     console.log(`Thumbnail clicked: Page ${pageNumber}`);
     
-    // Koreksi halaman untuk mengatasi masalah offset
-    let correctedPageNumber = pageNumber;
-    
-    // Untuk halaman 2-30 ada masalah offset, kita perlu mengurangi 1 untuk mendapatkan halaman yang benar
-    if (pageNumber >= 2 && pageNumber <= 30) {
-      correctedPageNumber = pageNumber - 1;
+    // KASUS KHUSUS untuk Cover
+    if (pageNumber === 0) {
+      // Jika ini adalah cover, kita ingin tetap membuka cover
+      onPageSelect(1);
+      return;
     }
     
-    onPageSelect(correctedPageNumber);
+    onPageSelect(pageNumber);
   };
 
   // Don't render anything if sidebar is completely closed
@@ -94,7 +93,7 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
       <div className="w-[calc(50%-6px)] cursor-pointer thumbnail-item">
         <div 
           className="thumbnail-image-container"
-          onClick={() => handleThumbnailClick(1)}
+          onClick={() => handleThumbnailClick(0)} // Pass 0 for Cover
         >
           <img
             src={getImagePath(1)}
@@ -143,7 +142,7 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
             {/* Halaman kiri */}
             <div 
               className="cursor-pointer thumbnail-item"
-              onClick={() => handleThumbnailClick(leftPage)}
+              onClick={() => handleThumbnailClick(leftPage - 1)}
             >
               <div className="thumbnail-image-container">
                 <img
@@ -158,7 +157,7 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
             {/* Halaman kanan */}
             <div 
               className="cursor-pointer thumbnail-item"
-              onClick={() => handleThumbnailClick(rightPage)}
+              onClick={() => handleThumbnailClick(rightPage - 1)}
             >
               <div className="thumbnail-image-container">
                 <img
@@ -186,7 +185,7 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
           {/* Halaman 29 */}
           <div 
             className="cursor-pointer thumbnail-item"
-            onClick={() => handleThumbnailClick(29)}
+            onClick={() => handleThumbnailClick(28)}
           >
             <div className="thumbnail-image-container">
               <img
@@ -201,7 +200,7 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
           {/* Halaman 30 */}
           <div 
             className="cursor-pointer thumbnail-item"
-            onClick={() => handleThumbnailClick(30)}
+            onClick={() => handleThumbnailClick(29)}
           >
             <div className="thumbnail-image-container">
               <img
