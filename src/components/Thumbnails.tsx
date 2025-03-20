@@ -73,8 +73,16 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
   // Fungsi untuk navigasi halaman saat thumbnail diklik
   const handleThumbnailClick = (pageNumber: number) => {
     console.log(`Thumbnail clicked: Page ${pageNumber}`);
-    // Langsung kirim ke goToPage tanpa modifikasi lain
-    onPageSelect(pageNumber);
+    
+    // Koreksi halaman untuk mengatasi masalah offset
+    let correctedPageNumber = pageNumber;
+    
+    // Untuk halaman 2-30 ada masalah offset, kita perlu mengurangi 1 untuk mendapatkan halaman yang benar
+    if (pageNumber >= 2 && pageNumber <= 30) {
+      correctedPageNumber = pageNumber - 1;
+    }
+    
+    onPageSelect(correctedPageNumber);
   };
 
   // Don't render anything if sidebar is completely closed
@@ -82,37 +90,41 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
 
   // Render Cover
   const renderCover = () => (
-    <div 
-      className="w-full cursor-pointer thumbnail-item mb-3"
-      onClick={() => handleThumbnailClick(1)}
-    >
-      <div className="thumbnail-image-container">
-        <img
-          src={getImagePath(1)}
-          alt="Cover"
-          className="w-full h-auto object-cover"
-          loading="lazy"
-        />
+    <div className="w-full mb-3 flex justify-center">
+      <div className="w-[calc(50%-6px)] cursor-pointer thumbnail-item">
+        <div 
+          className="thumbnail-image-container"
+          onClick={() => handleThumbnailClick(1)}
+        >
+          <img
+            src={getImagePath(1)}
+            alt="Cover"
+            className="w-full h-auto object-cover"
+            loading="lazy"
+          />
+        </div>
+        <div className="text-center py-1 text-xs text-gray-600">Cover</div>
       </div>
-      <div className="text-center py-1 text-xs text-gray-600">Cover</div>
     </div>
   );
 
   // Render Panorama
   const renderPanorama = () => (
-    <div 
-      className="w-full cursor-pointer thumbnail-item mb-3"
-      onClick={() => handleThumbnailClick(31)} // Klik pada panorama akan ke halaman 31
-    >
-      <div className="thumbnail-image-container">
-        <img
-          src={getImagePath(31)}
-          alt="Panorama 31-37"
-          className="w-full h-auto object-cover"
-          loading="lazy"
-        />
+    <div className="w-full mb-3 flex justify-center">
+      <div className="w-[calc(50%-6px)] cursor-pointer thumbnail-item">
+        <div 
+          className="thumbnail-image-container"
+          onClick={() => handleThumbnailClick(31)} // Klik pada panorama akan ke halaman 31
+        >
+          <img
+            src={getImagePath(31)}
+            alt="Panorama 31-37"
+            className="w-full h-auto object-cover"
+            loading="lazy"
+          />
+        </div>
+        <div className="text-center py-1 text-xs text-gray-600">Panorama 31-37</div>
       </div>
-      <div className="text-center py-1 text-xs text-gray-600">Panorama 31-37</div>
     </div>
   );
   
