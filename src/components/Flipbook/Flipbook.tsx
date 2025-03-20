@@ -14,6 +14,9 @@ import { panoramaState } from './PanoramaState';
 import Thumbnails from '../Thumbnails'; // Import the Thumbnails component
 import './styles.css';
 
+// Key for local storage
+const THUMBNAILS_STATE_KEY = 'flipbook_thumbnails_state';
+
 interface FlipbookProps {
   lang?: string; // Make the lang prop optional with a default value
 }
@@ -26,11 +29,46 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
   const [zoom, setZoom] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [scrollValue, setScrollValue] = useState(0);
-  const [showThumbnails, setShowThumbnails] = useState(false); // State for thumbnails
+  
+  // For preventing thumbnails from flashing during language changes
+  const [isLanguageChanging, setIsLanguageChanging] = useState(false);
+  const previousLang = useRef(lang);
+  
+  // Initialize thumbnails state from localStorage or default to false
+  const [showThumbnails, setShowThumbnails] = useState<boolean>(() => {
+    // Only run in the client
+    if (typeof window !== 'undefined') {
+      const savedState = localStorage.getItem(THUMBNAILS_STATE_KEY);
+      return savedState ? JSON.parse(savedState) === true : false;
+    }
+    return false;
+  });
   
   // Untuk mengatasi error hydration, gunakan useState tanpa nilai awal
   const [viewportWidth, setViewportWidth] = useState<number>(0); 
   const [isClient, setIsClient] = useState(false);
+  
+  // Effect to detect language changes
+  useEffect(() => {
+    if (previousLang.current !== lang) {
+      setIsLanguageChanging(true);
+      
+      // Reset after a short delay
+      const timer = setTimeout(() => {
+        setIsLanguageChanging(false);
+        previousLang.current = lang;
+      }, 500); // Delay to allow rendering to complete
+      
+      return () => clearTimeout(timer);
+    }
+  }, [lang]);
+  
+  // Save thumbnails state to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(THUMBNAILS_STATE_KEY, JSON.stringify(showThumbnails));
+    }
+  }, [showThumbnails]);
   
   // Effect untuk mendeteksi ukuran layar - hanya dijalankan di client
   useEffect(() => {
@@ -96,8 +134,11 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
 
   // Toggle thumbnails sidebar
   const toggleThumbnails = useCallback(() => {
-    setShowThumbnails(prev => !prev);
-  }, []);
+    // Only toggle thumbnails if we're not in the middle of a language change
+    if (!isLanguageChanging) {
+      setShowThumbnails(prev => !prev);
+    }
+  }, [isLanguageChanging]);
 
   // Navigation handlers
   const nextPage = useCallback((e?: React.MouseEvent) => {
@@ -528,16 +569,18 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
         showThumbnails={showThumbnails}
       />
       
-      {/* Thumbnails Sidebar */}
-      <Thumbnails 
-        isOpen={showThumbnails}
-        onClose={() => setShowThumbnails(false)}
-        onPageSelect={goToPage}
-        totalPages={totalPages}
-        currentPage={currentPage}
-      />
+      {/* Thumbnails Sidebar - Only render if not in language transition */}
+      {!isLanguageChanging && (
+        <Thumbnails 
+          isOpen={showThumbnails}
+          onClose={() => setShowThumbnails(false)}
+          onPageSelect={goToPage}
+          totalPages={totalPages}
+          currentPage={currentPage}
+        />
+      )}
     </div>
   );
 };
 
-export default Flipbook;    
+export default Flipbook;

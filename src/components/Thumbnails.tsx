@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { IoMdClose } from 'react-icons/io';
 import { usePathname } from 'next/navigation';
 import { getTranslation } from '@/utils/translations';
@@ -22,6 +22,7 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
 }) => {
   const [animation, setAnimation] = useState<string>("sidebar-closed");
   const pathname = usePathname();
+  const prevOpenState = useRef(isOpen);
   
   // Get current language from pathname
   const getCurrentLanguage = () => {
@@ -33,26 +34,77 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
   
   const currentLanguage = getCurrentLanguage();
   
-  // Handle animation on open/close
+  // Handle animation on open/close with debouncing to prevent flashing
   useEffect(() => {
-    if (isOpen) {
-      setAnimation("sidebar-opening");
-      
-      const timeout = setTimeout(() => {
-        setAnimation("sidebar-open");
-      }, 300);
-      
-      return () => clearTimeout(timeout);
-    } else {
-      setAnimation("sidebar-closing");
-      
-      const timeout = setTimeout(() => {
-        setAnimation("sidebar-closed");
-      }, 300);
-      
-      return () => clearTimeout(timeout);
+    // Prevent unnecessary state changes when language changes
+    if (isOpen !== prevOpenState.current) {
+      if (isOpen) {
+        setAnimation("sidebar-opening");
+        
+        const timeout = setTimeout(() => {
+          setAnimation("sidebar-open");
+        }, 300);
+        
+        prevOpenState.current = isOpen;
+        return () => clearTimeout(timeout);
+      } else {
+        setAnimation("sidebar-closing");
+        
+        const timeout = setTimeout(() => {
+          setAnimation("sidebar-closed");
+        }, 300);
+        
+        prevOpenState.current = isOpen;
+        return () => clearTimeout(timeout);
+      }
     }
   }, [isOpen]);
+
+  // Don't render anything if sidebar is completely closed
+  if (animation === "sidebar-closed") return null;
+
+  // Get translated text
+  const thumbnailsTitle = getTranslation('thumbnailsTitle', currentLanguage);
+  const coverText = getTranslation('cover', currentLanguage);
+  const panoramaText = getTranslation('panorama', currentLanguage);
+
+  // Render Cover
+  const renderCover = () => (
+    <div className="w-full mb-3 flex justify-center">
+      <div className="w-[calc(50%-6px)] cursor-pointer thumbnail-item">
+        <div 
+          className="thumbnail-image-container"
+          onClick={() => handleThumbnailClick(0)} // Pass 0 for Cover
+        >
+          <img
+            src={getImagePath(1)}
+            alt="Cover"
+            className="w-full h-auto object-cover"
+            loading="lazy"
+          />
+        </div>
+        <div className="text-center py-1 text-xs text-gray-600">{coverText}</div>
+      </div>
+    </div>
+  );
+
+  // Render Panorama with improved styling
+  const renderPanorama = () => (
+    <div className="w-full mb-3">
+      <div className="cursor-pointer thumbnail-item w-full"
+        onClick={() => handleThumbnailClick(31)}
+      >
+        <div className="panorama-thumbnail-container">
+          <img
+            src={getImagePath(31)}
+            alt="Panorama 31-37"
+            loading="lazy"
+          />
+        </div>
+        <div className="text-center py-1 text-xs text-gray-600">{panoramaText} 31-37</div>
+      </div>
+    </div>
+  );
   
   // PENTING: Fungsi untuk mendapatkan path file gambar yang benar
   const getImagePath = (pageNumber: number) => {
@@ -87,55 +139,9 @@ const Thumbnails: React.FC<ThumbnailsProps> = ({
   const handleThumbnailClick = (pageNumber: number) => {
     console.log(`Thumbnail clicked: Page ${pageNumber}`);
     
-    // Send the actual page number directly (no processing needed, handled by goToPage)
+    // Directly navigate without closing the sidebar
     onPageSelect(pageNumber);
   };
-
-  // Don't render anything if sidebar is completely closed
-  if (animation === "sidebar-closed") return null;
-
-  // Get translated text
-  const thumbnailsTitle = getTranslation('thumbnailsTitle', currentLanguage);
-  const coverText = getTranslation('cover', currentLanguage);
-  const panoramaText = getTranslation('panorama', currentLanguage);
-
-  // Render Cover
-  const renderCover = () => (
-    <div className="w-full mb-3 flex justify-center">
-      <div className="w-[calc(50%-6px)] cursor-pointer thumbnail-item">
-        <div 
-          className="thumbnail-image-container"
-          onClick={() => handleThumbnailClick(0)} // Pass 0 for Cover
-        >
-          <img
-            src={getImagePath(1)}
-            alt="Cover"
-            className="w-full h-auto object-cover"
-            loading="lazy"
-          />
-        </div>
-        <div className="text-center py-1 text-xs text-gray-600">{coverText}</div>
-      </div>
-    </div>
-  );
-
-// Render Panorama with improved styling
-const renderPanorama = () => (
-  <div className="w-full mb-3">
-    <div className="cursor-pointer thumbnail-item w-full"
-      onClick={() => handleThumbnailClick(31)}
-    >
-      <div className="panorama-thumbnail-container">
-        <img
-          src={getImagePath(31)}
-          alt="Panorama 31-37"
-          loading="lazy"
-        />
-      </div>
-      <div className="text-center py-1 text-xs text-gray-600">{panoramaText} 31-37</div>
-    </div>
-  </div>
-);
   
   // Render halaman berpasangan (sebelum panorama)
   const renderPagePairs = () => {
