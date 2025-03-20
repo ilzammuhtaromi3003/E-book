@@ -11,7 +11,7 @@ export default async function LangPage({
   const lang = (await Promise.resolve(params)).lang;
   
   return (
-    <main className="flex flex-col items-center justify-center w-full h-screen overflow-hidden bg-gray-200">
+    <main className="flex flex-col items-center justify-center w-full h-screen overflow-hidden bg-gray-200 p-2 md:p-4">
       <div className="w-full h-full max-h-[100vh] flex items-center justify-center">
         <Flipbook lang={lang} />
       </div>

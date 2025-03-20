@@ -28,6 +28,63 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
   const [scrollValue, setScrollValue] = useState(0);
   const [showThumbnails, setShowThumbnails] = useState(false); // State for thumbnails
   
+  // Untuk mengatasi error hydration, gunakan useState tanpa nilai awal
+  const [viewportWidth, setViewportWidth] = useState<number>(0); 
+  const [isClient, setIsClient] = useState(false);
+  
+  // Effect untuk mendeteksi ukuran layar - hanya dijalankan di client
+  useEffect(() => {
+    // Set isClient ke true untuk menunjukkan kita sekarang di client-side
+    setIsClient(true);
+    
+    // Set viewport width initial
+    setViewportWidth(window.innerWidth);
+    
+    // Handler untuk resize
+    const handleResize = () => {
+      setViewportWidth(window.innerWidth);
+    };
+    
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+  
+  // Fungsi untuk menghitung dimensi flipbook berdasarkan viewport
+  const getFlipbookDimensions = () => {
+    // Default ukuran untuk desktop
+    let width = 600;
+    let height = 700;
+    
+    // Hanya berikan ukuran berbeda jika di client-side dan viewport sudah diketahui
+    if (isClient && viewportWidth > 0) {
+      // Untuk iPad Pro (1024px), ukuran sedikit berbeda dari tablet biasa
+      if (viewportWidth === 1024) {
+        width = 600 * 0.8; // Sedikit lebih kecil dari tablet biasa
+        height = 700 * 0.8;
+      }
+      // Untuk tablet (768px - 1024px), ukuran 60% dari default
+      else if (viewportWidth >= 768 && viewportWidth < 1024) {
+        width = 600 * 0.6;
+        height = 700 * 0.6;
+      }
+      // Untuk mobile (< 768px), ukuran lebih kecil lagi
+      else if (viewportWidth < 768) {
+        width = 600 * 0.45;
+        height = 700 * 0.45;
+      }
+    }
+    
+    return { width, height };
+  };
+  
+  // Dapatkan dimensi yang dihitung
+  const { width: flipbookWidth, height: flipbookHeight } = getFlipbookDimensions();
+  
   // Deteksi apakah ini halaman panorama
   const isPanorama = currentPage === 31 || currentPage === 32;
 
@@ -286,6 +343,7 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
               (isPage7 && currentPage === 7) || 
               (isPage10 && currentPage === 11)
             } 
+            lang={lang}
           />
         </div>
       );
@@ -308,7 +366,7 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
     for (let i = 39; i <= 163; i++) {
       pages.push(
         <div key={`regular-${i}`} className="page">
-          <Page pageNumber={i} />
+          <Page pageNumber={i} lang={lang} />
         </div>
       );
     }
@@ -367,6 +425,17 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
     return `${currentPage}`;
   };
 
+  // Gunakan CSS classes alih-alih style inline untuk responsive styling
+  // Ini lebih aman untuk hydration
+  const mainContentClasses = `relative flex flex-col items-center justify-center w-full flex-grow ${
+    isClient && viewportWidth < 1024 ? 'pt-2 px-2 pb-2' : ''
+  }`;
+
+  // Gunakan className tambahan alih-alih style inline untuk tablet scaling
+  const bookContainerClasses = `relative book-container ${
+    isClient && viewportWidth >= 768 && viewportWidth < 1024 ? 'tablet-scale' : ''
+  }`;
+
   return (
     <div 
       ref={flipbookContainerRef}
@@ -380,7 +449,7 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
       />
       
       <div 
-        className="relative flex flex-col items-center justify-center w-full flex-grow"
+        className={mainContentClasses}
         style={{ transform: `scale(${zoom})`, transition: 'transform 0.3s ease' }}
       >
         <div className="relative">
@@ -393,15 +462,15 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
           />
           
           {/* Kontainer buku */}
-          <div className="relative book-container">
+          <div className={bookContainerClasses}>
             <HTMLFlipBook
-              width={600}
-              height={700}
+              width={flipbookWidth}
+              height={flipbookHeight}
               size="fixed"
-              minWidth={350}
-              maxWidth={1000}
-              minHeight={468}
-              maxHeight={1333}
+              minWidth={Math.max(350, flipbookWidth * 0.8)}
+              maxWidth={Math.max(1000, flipbookWidth * 1.2)}
+              minHeight={Math.max(468, flipbookHeight * 0.8)}
+              maxHeight={Math.max(1333, flipbookHeight * 1.2)}
               maxShadowOpacity={0.5}
               showCover={true}
               mobileScrollSupport={true}
@@ -437,12 +506,12 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
           
           {/* Slider untuk panorama - hanya muncul di halaman panorama */}
           {isPanorama && (
-  <PanoramaSlider 
-    scrollValue={scrollValue} 
-    setScrollValue={handleScrollValueChange}
-    lang={lang} // Teruskan prop lang ke PanoramaSlider
-  />
-)}
+            <PanoramaSlider 
+              scrollValue={scrollValue} 
+              setScrollValue={handleScrollValueChange}
+              lang={lang}
+            />
+          )}
         </div>
       </div>
       
@@ -471,4 +540,4 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
   );
 };
 
-export default Flipbook;
+export default Flipbook;    

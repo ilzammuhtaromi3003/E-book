@@ -301,7 +301,7 @@ const renderPanorama = () => (
     >
       {/* Header */}
       <div className="flex justify-between items-center px-4 py-2.5">
-        <h2 className="text-base font-medium text-gray-800">{thumbnailsTitle}</h2>
+        <h4 className="text-base font-medium text-gray-800 fw-bold">{thumbnailsTitle}</h4>
         <button 
           onClick={onClose}
           className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100"
