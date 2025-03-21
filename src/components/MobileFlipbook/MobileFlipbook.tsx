@@ -5,7 +5,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Navbar from '../Flipbook/Navbar';
 import Thumbnails from '../Thumbnails';
 import VideoButton from '../VideoButton';
-import MobileVideo from '../MobileVideo'; // Import the new MobileVideo component
+import MobileVideo from '../MobileVideo'; // Import komponen MobileVideo yang sudah diperbaiki
 import { FiZoomIn, FiZoomOut, FiMaximize2, FiMinimize2, FiArrowUp, FiGrid, FiDownload } from 'react-icons/fi';
 import { getTranslation } from '@/utils/translations';
 import { usePathname } from 'next/navigation';
@@ -331,7 +331,7 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
             </div>
           )}
           
-          {/* Video pada halaman 7 - UPDATED to use MobileVideo component with autoplay */}
+          {/* Video pada halaman 7 - UPDATED menggunakan komponen yang disederhanakan */}
           {i === 7 && (
             <MobileVideo
               videoSrc="/video3.mp4"
@@ -342,7 +342,7 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
             />
           )}
           
-          {/* Video pada halaman 10 - UPDATED with better visual appearance */}
+          {/* Video pada halaman 10 - Menggunakan komponen video yang disederhanakan */}
           {i === 10 && (
             <MobileVideo
               videoSrc="/video2.mp4"
@@ -350,7 +350,6 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
               autoplay={false}
               position={{ top: '20%', left: '25%' }}
               dimensions={{ width: '50%', height: 'auto' }}
-              usePoster={false} // Gunakan frame pertama video sebagai thumbnail seperti di desktop
             />
           )}
         </div>

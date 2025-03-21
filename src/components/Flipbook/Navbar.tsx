@@ -141,22 +141,33 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
   const isMobile = windowWidth < 768;
   const isTablet = windowWidth >= 768 && windowWidth < 1024;
   
+  // Adjusted logo size based on screen size
+  const logoHeight = isMobile ? 'h-16' : isTablet ? 'h-14' : 'h-20';
+  
+  // Adjust title font size for tablet
+  const titleFontSize = isTablet ? 'text-sm' : 'text-base';
+  
+  // Adjust page navigator size for tablet
+  const pageNavWidth = isTablet ? 'w-20' : 'w-24';
+  
   return (
-    <div className="w-full bg-white shadow-md px-4 py-2 flex justify-between items-center">
-      {/* Logo di kiri */}
+    <div className={`w-full bg-white shadow-md px-4 ${isTablet ? 'py-1' : 'py-2'} flex justify-between items-center`}>
+      {/* Logo di kiri - ukuran disesuaikan untuk tablet */}
       <div className="flex items-center">
-        <img src="/logo.png" alt="Logo" className="h-20 w-auto mr-2" />
+        <img src="/logo.png" alt="Logo" className={`${logoHeight} w-auto mr-2`} />
       </div>
       
-      {/* Informasi di tengah - tampilkan berbeda untuk mobile dan tablet */}
+      {/* Informasi di tengah - tampilan berbeda untuk desktop, tablet, dan mobile */}
       {!isMobile && (
-        <div className="flex items-center flex-grow justify-center">
-          <div className="text-gray-800 font-medium mr-4 text-center">
+        <div className={`flex items-center ${isTablet ? 'flex-col space-y-1' : 'flex-row'} flex-grow justify-center`}>
+          {/* Title - diperkecil untuk tablet */}
+          <div className={`text-gray-800 font-medium ${isTablet ? 'mb-1 text-xs' : 'mr-4 text-base'} text-center max-w-sm truncate`}>
             {bookTitleText}
           </div>
           
-          <div className="flex items-center border rounded px-2 py-1">
-            <span className="mr-2">{pageText}</span>
+          {/* Page navigation dengan ukuran yang disesuaikan */}
+          <div className={`flex items-center border rounded ${isTablet ? 'px-1 py-0.5' : 'px-2 py-1'}`}>
+            <span className={`${isTablet ? 'text-xs mr-1' : 'mr-2'}`}>{pageText}</span>
             {isEditing ? (
               <input
                 type="text"
@@ -164,18 +175,18 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
                 onChange={handleInputChange}
                 onBlur={handleInputBlur}
                 onKeyDown={handleKeyDown}
-                className="w-24 px-2 py-1 text-center border-none focus:outline-none"
+                className={`${pageNavWidth} ${isTablet ? 'px-1 py-0.5 text-sm' : 'px-2 py-1'} text-center border-none focus:outline-none`}
                 autoFocus
               />
             ) : (
               <span 
                 onClick={handleDisplayClick} 
-                className="w-24 px-2 py-1 text-center cursor-text"
+                className={`${pageNavWidth} ${isTablet ? 'px-1 py-0.5 text-sm' : 'px-2 py-1'} text-center cursor-text`}
               >
                 {inputValue}
               </span>
             )}
-            <span className="ml-2">/ {totalPages}</span>
+            <span className={`${isTablet ? 'text-xs ml-1' : 'ml-2'}`}>/ {totalPages}</span>
           </div>
         </div>
       )}
@@ -189,7 +200,7 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
         </div>
       )}
       
-      {/* Language switcher di kanan */}
+      {/* Language switcher di kanan - ukuran disesuaikan untuk tablet */}
       <div className="flex-shrink-0">
         <LanguageSwitcher />
       </div>
