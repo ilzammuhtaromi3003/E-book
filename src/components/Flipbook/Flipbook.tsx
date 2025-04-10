@@ -11,6 +11,10 @@ import Navbar from './Navbar';
 import { PanoramaLeftPage, PanoramaRightPage } from './PanoramaPages';
 import PanoramaSlider from './PanoramaSlider';
 import { panoramaState } from './PanoramaState';
+// Import komponen baru untuk halaman multi-page
+import { MultiPageLeftPage, MultiPageRightPage } from './MultiPagePages';
+import { multiPageState } from './MultiPageState';
+import MultiPageSlider from './MultiPageSlider'; // Import slider untuk multi-page
 import Thumbnails from '../Thumbnails'; // Import the Thumbnails component
 import './styles.css';
 
@@ -29,6 +33,8 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
   const [zoom, setZoom] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [scrollValue, setScrollValue] = useState(0);
+  // Tambahkan state untuk multi-page scroll value
+  const [multiPageScrollValue, setMultiPageScrollValue] = useState(0);
   
   // For preventing thumbnails from flashing during language changes
   const [isLanguageChanging, setIsLanguageChanging] = useState(false);
@@ -123,8 +129,9 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
   // Dapatkan dimensi yang dihitung
   const { width: flipbookWidth, height: flipbookHeight } = getFlipbookDimensions();
   
-  // Deteksi apakah ini halaman panorama
+  // Deteksi apakah ini halaman panorama atau multi-page
   const isPanorama = currentPage === 31 || currentPage === 32;
+  const isMultiPage = currentPage === 33 || currentPage === 34; // Index 33-34 akan menjadi halaman 38-44
 
   // Check if current page is page 7 (file: page_Page_008.jpg)
   const isPage7Active = currentPage === 7;
@@ -193,11 +200,16 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
         targetIndex = 31;
         panoramaState.setScrollValue(0);
       }
-      // Pages after panorama (38+)
-      else if (pageNumber >= 38) {
-        // For pages after panorama, we need to account for the 5 "missing" indices
-        // (7 panorama pages represented by only 2 indices: 31-32)
-        targetIndex = pageNumber - 5; // -5 to account for panorama compression
+      // Multi-page pages (38-44)
+      else if (pageNumber >= 38 && pageNumber <= 44) {
+        targetIndex = 33;
+        multiPageState.setScrollValue(0);
+      }
+      // Pages after multi-page (45+)
+      else if (pageNumber >= 45) {
+        // For pages after multi-page, we need to account for the 10 "missing" indices
+        // (7 panorama pages + 6 multi-pages represented by only 4 indices total)
+        targetIndex = pageNumber - 10;
       }
       // Regular pages (1-30, except special cases)
       else {
@@ -219,7 +231,7 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
     }
   }, []);
 
-  // Pada onPageChange, tambahkan reset untuk panorama dan dispatch custom event
+  // Pada onPageChange, tambahkan reset untuk panorama dan multi-page, dan dispatch custom event
   const onPageChange = (e: any) => {
     console.log('Halaman berubah ke:', e.data);
     setCurrentPage(e.data);
@@ -242,6 +254,16 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
       panoramaState.reset();
       setScrollValue(0);
     }
+    
+    // Reset multi-page state
+    if (e.data !== 33 && e.data !== 34) {
+      multiPageState.reset();
+      setMultiPageScrollValue(0);
+    } else if (e.data === 33 || e.data === 34) {
+      // Selalu mulai dari kiri saat masuk ke halaman multi-page
+      multiPageState.reset();
+      setMultiPageScrollValue(0);
+    }
   };
 
   // Sync scroll value dengan state panorama saat masuk ke halaman panorama
@@ -262,9 +284,41 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
     }
   }, [isPanorama]);
 
+  // Sync scroll value dengan state multi-page
+  useEffect(() => {
+    if (isMultiPage) {
+      setMultiPageScrollValue(multiPageState.scrollValue);
+    }
+  }, [isMultiPage]);
+  
+  // Ketika masuk ke halaman multi-page, pastikan selalu mulai dari kiri
+  useEffect(() => {
+    if (isMultiPage) {
+      // Tunda sedikit untuk memastikan render selesai
+      setTimeout(() => {
+        multiPageState.reset();
+        setMultiPageScrollValue(0);
+      }, 50);
+    }
+  }, [isMultiPage]);
+  
+  // Register callback dari multiPageState
+  useEffect(() => {
+    const unregister = multiPageState.registerCallback((value) => {
+      setMultiPageScrollValue(value);
+    });
+    
+    return unregister;
+  }, []);
+
   // Handler untuk update scroll value
   const handleScrollValueChange = useCallback((value: number) => {
     setScrollValue(value);
+  }, []);
+
+  // Handler untuk update multi-page scroll value
+  const handleMultiPageScrollValueChange = useCallback((value: number) => {
+    setMultiPageScrollValue(value);
   }, []);
 
   // Zoom handlers
@@ -323,12 +377,16 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
       if (e.key === 'ArrowLeft') {
         if (isPanorama) {
           panoramaState.scrollLeft();
+        } else if (isMultiPage) {
+          multiPageState.scrollLeft();
         } else {
           prevPage();
         }
       } else if (e.key === 'ArrowRight') {
         if (isPanorama) {
           panoramaState.scrollRight();
+        } else if (isMultiPage) {
+          multiPageState.scrollRight();
         } else {
           nextPage();
         }
@@ -362,7 +420,7 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
       window.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
-  }, [prevPage, nextPage, handleZoomIn, handleZoomOut, toggleFullscreen, isPanorama, goToHome, toggleThumbnails, showThumbnails]);
+  }, [prevPage, nextPage, handleZoomIn, handleZoomOut, toggleFullscreen, isPanorama, isMultiPage, goToHome, toggleThumbnails, showThumbnails]);
 
   // Function untuk render halaman
   const renderPages = () => {
@@ -403,8 +461,22 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
       </div>
     );
     
-    // Halaman 39-163 (halaman 38-162 dalam penomoran)
-    for (let i = 39; i <= 163; i++) {
+    // Tambahkan halaman multi-page (halaman 38-44)
+    pages.push(
+      <div key="multi-page-left" className="page">
+        <MultiPageLeftPage scrollValue={multiPageScrollValue} lang={lang} />
+      </div>
+    );
+    
+    pages.push(
+      <div key="multi-page-right" className="page">
+        <MultiPageRightPage lang={lang} />
+      </div>
+    );
+    
+    // Halaman 45-163 (halaman 45-162 dalam penomoran)
+    // Perhatikan perubahan indeks: halaman setelah multi-page (44) harus dimulai dari 46
+    for (let i = 46; i <= 163; i++) {
       pages.push(
         <div key={`regular-${i}`} className="page">
           <Page pageNumber={i} lang={lang} />
@@ -427,6 +499,11 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
       return "31-37";
     }
     
+    // Untuk halaman multi-page (halaman 38-44, indeks 33-34)
+    if (currentPage === 33 || currentPage === 34) {
+      return "38-44";
+    }
+    
     // Untuk halaman normal sebelum panorama (indeks 1-30 = halaman 1-30)
     if (currentPage >= 1 && currentPage <= 30) {
       // Untuk halaman genap, tunjukkan dengan halaman sebelumnya
@@ -443,10 +520,12 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
       }
     }
     
-    // Untuk halaman setelah panorama (indeks 33+ = halaman 38+)
-    if (currentPage >= 33) {
+    // Untuk halaman setelah multi-page (indeks 35+ = halaman 45+)
+    if (currentPage >= 35) {
       // Hitung nomor halaman yang sebenarnya
-      const actualPage = currentPage + 5; // Karena indeks 33 = halaman 38
+      // Karena indeks 35 = halaman 45 (kita "menghilangkan" 10 indeks: 
+      // 5 dari panorama + 5 dari multi-page)
+      const actualPage = currentPage + 10; 
       
       // Untuk indeks genap, pasangkan "sebelumnya-ini"
       if (currentPage % 2 === 0) {
@@ -497,7 +576,7 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
           <NavigationButtons 
             currentPage={currentPage}
             totalPages={renderPages().length}
-            isPanorama={false}
+            isPanorama={isPanorama || isMultiPage}
             onPrev={prevPage}
             onNext={nextPage}
           />
@@ -550,6 +629,15 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
             <PanoramaSlider 
               scrollValue={scrollValue} 
               setScrollValue={handleScrollValueChange}
+              lang={lang}
+            />
+          )}
+          
+          {/* Slider untuk multi-page - hanya muncul di halaman multi-page */}
+          {isMultiPage && (
+            <MultiPageSlider
+              scrollValue={multiPageScrollValue}
+              setScrollValue={handleMultiPageScrollValueChange}
               lang={lang}
             />
           )}
