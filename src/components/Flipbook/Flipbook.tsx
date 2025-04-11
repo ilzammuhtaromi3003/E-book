@@ -151,8 +151,8 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
   // Fungsi untuk menghitung dimensi flipbook berdasarkan viewport
   const getFlipbookDimensions = () => {
     // Default ukuran untuk desktop
-    let width = 600;
-    let height = 700;
+    let width = 600 * 0.95;
+    let height = 700 * 0.95;
     
     // Hanya berikan ukuran berbeda jika di client-side dan viewport sudah diketahui
     if (isClient && viewportWidth > 0) {

@@ -5,9 +5,14 @@ type ScrollChangeCallback = (value: number) => void;
 
 // Store untuk nilai scroll panorama global
 export const panoramaState = {
-  scrollValue: 0,
+  scrollValue: 0, // Nilai slider saat ini
+  // Track nilai transformasi terakhir untuk menghindari patah-patah
+  lastTransformX: 0, 
   sliderMax: 1000, // Nilai maksimum untuk slider UI tetap 1000
-  scrollFactor: 2.85, // Faktor pengali default yang lebih besar
+  scrollFactor: 2.71, // Faktor pengali default
+  animating: false, // Mencegah update berulang selama animasi
+  animationFrameId: 0, // ID dari animasi frame untuk membatalkan jika diperlukan
+  targetValue: null as number | null, // Target nilai terakhir, untuk menghindari gerakan salah arah
   callbacks: [] as ScrollChangeCallback[],
   
   // Register callback untuk notifikasi perubahan scroll
@@ -20,7 +25,10 @@ export const panoramaState = {
   
   // Notify all callbacks
   notifyCallbacks: () => {
-    panoramaState.callbacks.forEach(callback => callback(panoramaState.scrollValue));
+    // Hanya panggil callbacks jika tidak sedang animasi
+    if (!panoramaState.animating) {
+      panoramaState.callbacks.forEach(callback => callback(panoramaState.scrollValue));
+    }
   },
   
   // Fungsi untuk mengatur faktor scroll
@@ -31,71 +39,144 @@ export const panoramaState = {
     }
   },
   
-  setScrollValue: (value: number) => {
-    // Simpan nilai slider asli
-    panoramaState.scrollValue = value;
-
-    // Update semua elemen panorama dengan nilai scroll sebenarnya
-    const leftPano = document.getElementById('panorama-img-left');
-    const rightPano = document.getElementById('panorama-img-right');
-    
-    if (leftPano) {
-      leftPano.style.transform = `translateX(-${value * panoramaState.scrollFactor}px)`;
-      leftPano.style.transition = 'transform 0.8s ease';
+  // Fungsi untuk menganimasikan pergerakan gambar tanpa patah-patah
+  animateImageMove: (newScrollValue: number) => {
+    // Batalkan animasi sebelumnya jika masih berjalan
+    if (panoramaState.animationFrameId) {
+      cancelAnimationFrame(panoramaState.animationFrameId);
     }
     
-    if (rightPano) {
-      rightPano.style.transform = `translateX(-${value * panoramaState.scrollFactor}px)`;
-      rightPano.style.transition = 'transform 0.8s ease';
+    // Update nilai scroll langsung (untuk slider UI)
+    const oldScrollValue = panoramaState.scrollValue;
+    panoramaState.scrollValue = newScrollValue;
+    
+    // Set target nilai baru
+    panoramaState.targetValue = newScrollValue;
+    
+    // Hitung posisi target transformasi
+    const targetTransformX = newScrollValue * panoramaState.scrollFactor;
+    
+    // Gunakan nilai transformasi terakhir sebagai awal
+    // Jika ini perubahan pertama, hitung berdasarkan nilai scroll
+    const startTransformX = panoramaState.lastTransformX || (oldScrollValue * panoramaState.scrollFactor);
+    
+    // Tandai sedang dalam proses animasi
+    panoramaState.animating = true;
+    
+    // Waktu mulai dan durasi animasi
+    const startTime = performance.now();
+    const duration = 400; // Durasi animasi dalam ms
+    
+    // Fungsi untuk animasi gambar dengan kecepatan konstan (linear)
+    const animateImage = (currentTime: number) => {
+      // Cek apakah target nilai telah berubah dari yang awal
+      if (panoramaState.targetValue !== newScrollValue) {
+        // Target telah berubah, hentikan animasi ini
+        return;
+      }
+      
+      const elapsedTime = currentTime - startTime;
+      
+      if (elapsedTime < duration) {
+        // Hitung progress dengan pergerakan linear
+        const progress = elapsedTime / duration;
+        
+        // Hitung nilai transformasi saat ini
+        const currentTransformX = startTransformX + (targetTransformX - startTransformX) * progress;
+        panoramaState.lastTransformX = currentTransformX;
+        
+        // Update DOM elements untuk gambar
+        const leftPano = document.getElementById('panorama-img-left');
+        const rightPano = document.getElementById('panorama-img-right');
+        
+        if (leftPano) {
+          leftPano.style.transition = 'none'; // Hapus transisi CSS, gunakan animasi JS
+          leftPano.style.transform = `translateX(-${currentTransformX}px)`;
+        }
+        
+        if (rightPano) {
+          rightPano.style.transition = 'none';
+          rightPano.style.transform = `translateX(-${currentTransformX}px)`;
+        }
+        
+        // Lanjutkan animasi
+        panoramaState.animationFrameId = requestAnimationFrame(animateImage);
+      } else {
+        // Animasi selesai, set ke nilai target tepat
+        panoramaState.lastTransformX = targetTransformX;
+        
+        const leftPano = document.getElementById('panorama-img-left');
+        const rightPano = document.getElementById('panorama-img-right');
+        
+        if (leftPano) {
+          leftPano.style.transform = `translateX(-${targetTransformX}px)`;
+        }
+        
+        if (rightPano) {
+          rightPano.style.transform = `translateX(-${targetTransformX}px)`;
+        }
+        
+        // Tandai animasi selesai dan reset ID animasi
+        panoramaState.animating = false;
+        panoramaState.animationFrameId = 0;
+        panoramaState.targetValue = null;
+        
+        // Panggil callback untuk update UI lainnya
+        panoramaState.notifyCallbacks();
+      }
+    };
+    
+    // Mulai animasi (namun pastikan nilai gambar diperbarui segera untuk slider UI)
+    // Handle kasus khusus untuk drag - langsung pindahkan gambar jika perbedaannya kecil
+    if (Math.abs(targetTransformX - startTransformX) < 50) {
+      // Untuk pergerakan kecil (seperti drag), langsung pindahkan gambar
+      panoramaState.lastTransformX = targetTransformX;
+      
+      const leftPano = document.getElementById('panorama-img-left');
+      const rightPano = document.getElementById('panorama-img-right');
+      
+      if (leftPano) {
+        leftPano.style.transition = 'none';
+        leftPano.style.transform = `translateX(-${targetTransformX}px)`;
+      }
+      
+      if (rightPano) {
+        rightPano.style.transition = 'none';
+        rightPano.style.transform = `translateX(-${targetTransformX}px)`;
+      }
+      
+      // Reset state
+      panoramaState.animating = false;
+      panoramaState.targetValue = null;
+      
+      // Panggil callback untuk update UI
+      panoramaState.notifyCallbacks();
+    } else {
+      // Untuk pergerakan besar, gunakan animasi
+      panoramaState.animationFrameId = requestAnimationFrame(animateImage);
     }
     
-    // Notify all callbacks about the change
+    // Segera panggil callback untuk memperbarui UI slider
     panoramaState.notifyCallbacks();
+  },
+  
+  setScrollValue: (value: number) => {
+    // Gunakan animasi untuk gambar saja
+    panoramaState.animateImageMove(value);
   },
   
   scrollLeft: () => {
     const newValue = Math.max(0, panoramaState.scrollValue - 100);
-    panoramaState.setScrollValue(newValue);
+    panoramaState.animateImageMove(newValue);
   },
   
   scrollRight: () => {
     const newValue = Math.min(panoramaState.sliderMax, panoramaState.scrollValue + 100);
-    panoramaState.setScrollValue(newValue);
+    panoramaState.animateImageMove(newValue);
   },
   
   reset: () => {
-    // Reset scroll ke 0
-    panoramaState.scrollValue = 0;
-    
-    // Update semua elemen panorama dengan hard reset
-    const leftPano = document.getElementById('panorama-img-left');
-    const rightPano = document.getElementById('panorama-img-right');
-    
-    if (leftPano) {
-      // Hapus transisi untuk reset instan
-      leftPano.style.transition = 'none';
-      leftPano.style.transform = 'translateX(0px)';
-      // Force reflow
-      void leftPano.offsetWidth;
-      // Kembalikan transisi
-      setTimeout(() => {
-        leftPano.style.transition = 'transform 0.8s ease';
-      }, 50);
-    }
-    
-    if (rightPano) {
-      // Hapus transisi untuk reset instan
-      rightPano.style.transition = 'none';
-      rightPano.style.transform = 'translateX(0px)';
-      // Force reflow
-      void rightPano.offsetWidth;
-      // Kembalikan transisi
-      setTimeout(() => {
-        rightPano.style.transition = 'transform 0.8s ease';
-      }, 50);
-    }
-    
-    // Notify all callbacks
-    panoramaState.notifyCallbacks();
+    // Reset scroll ke 0 dengan animasi mulus
+    panoramaState.animateImageMove(0);
   }
 };
