@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { getTranslation } from '@/utils/translations';
 import LanguageSwitcher from '../LanguageSwitcher';
@@ -16,6 +16,7 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [windowWidth, setWindowWidth] = useState<number>(0);
   const pathname = usePathname();
+  const inputRef = useRef<HTMLInputElement>(null);
   
   // Get current language from pathname
   const getCurrentLanguage = () => {
@@ -91,6 +92,17 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
     setInputValue(e.target.value);
   };
   
+  // Handle input focus
+  const handleInputFocus = () => {
+    // Kosongkan input saat difokuskan
+    setInputValue('');
+    
+    // Pilih seluruh teks jika ada (sebagai alternatif dari mengosongkan)
+    if (inputRef.current) {
+      inputRef.current.select();
+    }
+  };
+  
   // Handle input blur (when user clicks outside)
   const handleInputBlur = () => {
     handlePageSubmit();
@@ -107,6 +119,12 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
   
   // Handle page submission
   const handlePageSubmit = () => {
+    // Jika input kosong, kembalikan ke tampilan halaman saat ini
+    if (!inputValue.trim()) {
+      setInputValue(formatPageDisplay(pageDisplay));
+      return;
+    }
+    
     // Periksa jika input adalah rentang halaman (misalnya "23-24")
     const rangeMatch = inputValue.match(/^(\d+)-(\d+)$/);
     if (rangeMatch) {
@@ -171,8 +189,10 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
             {isEditing ? (
               <input
                 type="text"
+                ref={inputRef}
                 value={inputValue}
                 onChange={handleInputChange}
+                onFocus={handleInputFocus}
                 onBlur={handleInputBlur}
                 onKeyDown={handleKeyDown}
                 className={`${pageNavWidth} ${isTablet ? 'px-1 py-0.5 text-sm' : 'px-2 py-1'} text-center border-none focus:outline-none`}
