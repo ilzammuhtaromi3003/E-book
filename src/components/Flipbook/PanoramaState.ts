@@ -6,6 +6,8 @@ type ScrollChangeCallback = (value: number) => void;
 // Store untuk nilai scroll panorama global
 export const panoramaState = {
   scrollValue: 0,
+  sliderMax: 1000, // Nilai maksimum untuk slider UI tetap 1000
+  scrollFactor: 2.85, // Faktor pengali default yang lebih besar
   callbacks: [] as ScrollChangeCallback[],
   
   // Register callback untuk notifikasi perubahan scroll
@@ -21,23 +23,30 @@ export const panoramaState = {
     panoramaState.callbacks.forEach(callback => callback(panoramaState.scrollValue));
   },
   
+  // Fungsi untuk mengatur faktor scroll
+  setScrollFactor: (factor: number) => {
+    if (factor > 0) {
+      panoramaState.scrollFactor = factor;
+      console.log(`ScrollFactor disetel ke: ${factor}`);
+    }
+  },
+  
   setScrollValue: (value: number) => {
+    // Simpan nilai slider asli
     panoramaState.scrollValue = value;
-    
-    // Update semua elemen panorama
+
+    // Update semua elemen panorama dengan nilai scroll sebenarnya
     const leftPano = document.getElementById('panorama-img-left');
     const rightPano = document.getElementById('panorama-img-right');
     
     if (leftPano) {
-      leftPano.style.transform = `translateX(-${value}px)`;
-      // Transisi yang lebih lambat dan lebih halus
-      leftPano.style.transition = 'transform 1.2s cubic-bezier(0.1, 0.4, 0.2, 1)';
+      leftPano.style.transform = `translateX(-${value * panoramaState.scrollFactor}px)`;
+      leftPano.style.transition = 'transform 0.8s ease';
     }
     
     if (rightPano) {
-      rightPano.style.transform = `translateX(-${value}px)`;
-      // Transisi yang lebih lambat dan lebih halus
-      rightPano.style.transition = 'transform 1.2s cubic-bezier(0.1, 0.4, 0.2, 1)';
+      rightPano.style.transform = `translateX(-${value * panoramaState.scrollFactor}px)`;
+      rightPano.style.transition = 'transform 0.8s ease';
     }
     
     // Notify all callbacks about the change
@@ -45,12 +54,12 @@ export const panoramaState = {
   },
   
   scrollLeft: () => {
-    const newValue = Math.max(0, panoramaState.scrollValue - 200);
+    const newValue = Math.max(0, panoramaState.scrollValue - 100);
     panoramaState.setScrollValue(newValue);
   },
   
   scrollRight: () => {
-    const newValue = Math.min(1000, panoramaState.scrollValue + 200);
+    const newValue = Math.min(panoramaState.sliderMax, panoramaState.scrollValue + 100);
     panoramaState.setScrollValue(newValue);
   },
   
@@ -70,7 +79,7 @@ export const panoramaState = {
       void leftPano.offsetWidth;
       // Kembalikan transisi
       setTimeout(() => {
-        leftPano.style.transition = 'transform 1.2s cubic-bezier(0.1, 0.4, 0.2, 1)';
+        leftPano.style.transition = 'transform 0.8s ease';
       }, 50);
     }
     
@@ -82,7 +91,7 @@ export const panoramaState = {
       void rightPano.offsetWidth;
       // Kembalikan transisi
       setTimeout(() => {
-        rightPano.style.transition = 'transform 1.2s cubic-bezier(0.1, 0.4, 0.2, 1)';
+        rightPano.style.transition = 'transform 0.8s ease';
       }, 50);
     }
     

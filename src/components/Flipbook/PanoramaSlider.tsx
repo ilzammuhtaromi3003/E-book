@@ -35,10 +35,13 @@ const PanoramaSlider: React.FC<PanoramaSliderProps> = ({
   // Handler untuk slider
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseInt(e.target.value);
+    
     // Update panoramaState yang akan mengupdate gambar
     panoramaState.setScrollValue(newValue);
+    
     // Update React state untuk menjaga sinkronisasi UI
     setScrollValue(newValue);
+    
     // Sembunyikan tooltip saat user mulai menggeser
     setShowTooltip(false);
   };
@@ -60,19 +63,52 @@ const PanoramaSlider: React.FC<PanoramaSliderProps> = ({
   // Dapatkan teks tooltip sesuai bahasa
   const tooltipText = getTranslation('dragToRight', lang);
   
+  // Tambahkan style untuk slider thumb color
+  useEffect(() => {
+    // Menambahkan custom CSS untuk mengatur warna buletan slider
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = `
+      .panorama-range-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #005fac;
+        cursor: pointer;
+      }
+      
+      .panorama-range-slider::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #005fac;
+        cursor: pointer;
+      }
+    `;
+    document.head.appendChild(styleElement);
+    
+    // Cleanup saat unmount
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
+  
+  // Setel posisi slider ke tengah halaman
   return (
     <div 
       className="panorama-slider-container" 
       style={{
         position: 'absolute',
         bottom: '-20px',
-        left: '30%',
-        transform: 'translateX(-50%)',
-        width: '80%',
-        maxWidth: '450px',
+        left: '35%', // Posisi lebih ke kiri agar benar-benar di tengah halaman
+        width: '40%', // Lebih pendek untuk memastikan benar-benar di tengah
+        maxWidth: '350px',
         borderRadius: '30px',
         padding: '5px 15px',
-        zIndex: 1000
+        zIndex: 1000,
+        margin: '0 auto',
+        transform: 'translateX(-20%)' // Geser sedikit ke kiri untuk kompensasi
       }}
     >
       {/* Tooltip yang muncul di atas slider */}
@@ -113,7 +149,7 @@ const PanoramaSlider: React.FC<PanoramaSliderProps> = ({
         </div>
       )}
       
-      {/* Slider tanpa tombol panah */}
+      {/* Slider */}
       <input
         id="panorama-slider"
         ref={sliderRef}
@@ -130,7 +166,9 @@ const PanoramaSlider: React.FC<PanoramaSliderProps> = ({
           appearance: 'none',
           borderRadius: '3px',
           background: '#e2e8f0',
-          outline: 'none'
+          outline: 'none',
+          display: 'block',
+          margin: '0 auto'
         }}
         onMouseEnter={() => setShowTooltip(false)}
       />

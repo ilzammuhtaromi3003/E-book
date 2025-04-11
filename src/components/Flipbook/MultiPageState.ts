@@ -6,6 +6,8 @@ type ScrollChangeCallback = (value: number) => void;
 // Store untuk nilai scroll halaman multi-page
 export const multiPageState = {
   scrollValue: 0,
+  sliderMax: 1000, // Nilai maksimum slider
+  scrollFactor: 2.87, // Faktor pengali default untuk scroll (akan diupdate otomatis)
   callbacks: [] as ScrollChangeCallback[],
   
   // Register callback untuk notifikasi perubahan scroll
@@ -21,6 +23,14 @@ export const multiPageState = {
     multiPageState.callbacks.forEach(callback => callback(multiPageState.scrollValue));
   },
   
+  // Set scroll factor berdasarkan ukuran gambar
+  setScrollFactor: (factor: number) => {
+    if (factor > 0) {
+      multiPageState.scrollFactor = factor;
+      console.log(`Faktor scroll multi-page diperbarui ke: ${factor}`);
+    }
+  },
+  
   setScrollValue: (value: number) => {
     console.log("MultiPageState setting scroll value to:", value);
     multiPageState.scrollValue = value;
@@ -29,9 +39,9 @@ export const multiPageState = {
     const leftMultiPage = document.getElementById('multi-page-img-left');
     
     if (leftMultiPage) {
-      leftMultiPage.style.transform = `translateX(-${value}px)`;
+      leftMultiPage.style.transform = `translateX(-${value * multiPageState.scrollFactor}px)`;
       // Transisi yang halus
-      leftMultiPage.style.transition = 'transform 1.2s cubic-bezier(0.1, 0.4, 0.2, 1)';
+      leftMultiPage.style.transition = 'transform 0.8s ease';
     } else {
       console.log("Element 'multi-page-img-left' not found");
     }
@@ -68,7 +78,7 @@ export const multiPageState = {
       void leftMultiPage.offsetWidth;
       // Kembalikan transisi
       setTimeout(() => {
-        leftMultiPage.style.transition = 'transform 1.2s cubic-bezier(0.1, 0.4, 0.2, 1)';
+        leftMultiPage.style.transition = 'transform 0.8s ease';
       }, 50);
     }
     

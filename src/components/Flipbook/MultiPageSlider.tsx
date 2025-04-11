@@ -107,13 +107,14 @@ const MultiPageSlider: React.FC<MultiPageSliderProps> = ({
       style={{
         position: 'absolute',
         bottom: '-20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '80%',
-        maxWidth: '450px',
+        left: '42%', // Pindah ke kiri agar berada di tengah halaman
+        width: '40%', // Lebih pendek agar benar-benar di tengah
+        maxWidth: '350px',
         borderRadius: '30px',
         padding: '5px 15px',
-        zIndex: 1000
+        zIndex: 1000,
+        margin: '0 auto',
+        transform: 'translateX(-20%)' // Geser sedikit ke kiri untuk kompensasi
       }}
       onClick={handleMouseEvents}
       onMouseDown={handleMouseEvents}
@@ -174,7 +175,9 @@ const MultiPageSlider: React.FC<MultiPageSliderProps> = ({
           appearance: 'none',
           borderRadius: '3px',
           background: '#BCBDC1',
-          outline: 'none'
+          outline: 'none',
+          display: 'block',
+          margin: '0 auto'
         }}
         onClick={handleMouseEvents}
         onMouseDown={handleMouseEvents}

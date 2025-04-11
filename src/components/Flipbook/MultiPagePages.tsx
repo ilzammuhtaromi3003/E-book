@@ -1,7 +1,7 @@
 "use client";
 
 // components/Flipbook/MultiPagePages.tsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { multiPageState } from './MultiPageState';
 
 interface MultiPageProps {
@@ -24,10 +24,52 @@ export const MultiPageLeftPage: React.FC<MultiPageProps> = ({
     "/tinggi/page_Page_044.jpg"
   ];
 
+  // Ref untuk container dan element gambar pertama
+  const containerRef = useRef<HTMLDivElement>(null);
+  const firstImageRef = useRef<HTMLImageElement>(null);
+
   // Event handler untuk mencegah event bubbling yang bisa menyebabkan flip
   const preventEventBubbling = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
+
+  // Efek untuk mengukur gambar dan mengatur scrollFactor yang tepat
+  useEffect(() => {
+    // Fungsi untuk mengukur lebar total gambar
+    const measureTotalWidth = () => {
+      // Element dengan semua gambar
+      const multiPageElement = document.getElementById('multi-page-img-left');
+      // Container
+      const container = containerRef.current;
+      
+      if (multiPageElement && container) {
+        // Hitung total lebar semua gambar
+        const totalWidth = multiPageElement.scrollWidth;
+        // Lebar container
+        const containerWidth = container.offsetWidth;
+        
+        console.log('Total lebar gambar multi-page:', totalWidth, 'px');
+        console.log('Lebar container multi-page:', containerWidth, 'px');
+        
+        // Hitung factor scroll yang dibutuhkan
+        // Kita perlu menggeser total lebar - containerWidth
+        const scrollNeeded = totalWidth - containerWidth;
+        if (scrollNeeded > 0) {
+          // Tambahkan margin 5% untuk memastikan semua terlihat
+          const scrollFactor = (scrollNeeded / multiPageState.sliderMax) * 1.05;
+          multiPageState.setScrollFactor(scrollFactor);
+          console.log('Faktor scroll multi-page disetel ke:', scrollFactor);
+        }
+      }
+    };
+    
+    // Tunggu sedikit untuk memastikan gambar sudah dimuat
+    const timer = setTimeout(() => {
+      measureTotalWidth();
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // Efek untuk mengatur event handler pada elemen parent untuk mencegah page flip
   useEffect(() => {
@@ -54,13 +96,16 @@ export const MultiPageLeftPage: React.FC<MultiPageProps> = ({
       onClick={preventEventBubbling} 
       onMouseDown={preventEventBubbling}
     >
-      <div className="w-full h-full overflow-hidden">
+      <div 
+        ref={containerRef}
+        className="w-full h-full overflow-hidden"
+      >
         <div 
           id="multi-page-img-left"
           className="h-full relative inline-flex"
           style={{ 
-            transform: `translateX(-${scrollValue}px)`,
-            transition: 'transform 1.2s cubic-bezier(0.1, 0.4, 0.2, 1)'
+            transform: `translateX(-${scrollValue * multiPageState.scrollFactor}px)`,
+            transition: 'transform 0.8s ease'
           }}
           onClick={preventEventBubbling}
           onMouseDown={preventEventBubbling}
@@ -69,6 +114,7 @@ export const MultiPageLeftPage: React.FC<MultiPageProps> = ({
           {images.map((src, index) => (
             <img
               key={index}
+              ref={index === 0 ? firstImageRef : null}
               src={src}
               alt={`Page ${39 + index}`}
               className="h-full w-auto max-w-none"
