@@ -16,10 +16,12 @@ import { MultiPageLeftPage, MultiPageRightPage } from './MultiPagePages';
 import { multiPageState } from './MultiPageState';
 import MultiPageSlider from './MultiPageSlider'; // Import slider untuk multi-page
 import Thumbnails from '../Thumbnails'; // Import the Thumbnails component
+import TableOfContents from '../TableOfContents'; // Import the TableOfContents component
 import './styles.css';
 
-// Key for local storage
+// Keys for local storage
 const THUMBNAILS_STATE_KEY = 'flipbook_thumbnails_state';
+const TOC_STATE_KEY = 'flipbook_toc_state';
 
 interface FlipbookProps {
   lang?: string; // Make the lang prop optional with a default value
@@ -50,6 +52,16 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
     return false;
   });
   
+  // Initialize table of contents state from localStorage or default to false
+  const [showTableOfContents, setShowTableOfContents] = useState<boolean>(() => {
+    // Only run in the client
+    if (typeof window !== 'undefined') {
+      const savedState = localStorage.getItem(TOC_STATE_KEY);
+      return savedState ? JSON.parse(savedState) === true : false;
+    }
+    return false;
+  });
+  
   // Untuk mengatasi error hydration, gunakan useState tanpa nilai awal
   const [viewportWidth, setViewportWidth] = useState<number>(0); 
   const [isClient, setIsClient] = useState(false);
@@ -58,6 +70,10 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
   useEffect(() => {
     if (previousLang.current !== lang) {
       setIsLanguageChanging(true);
+      
+      // Reset sidebars when language changes
+      setShowThumbnails(false);
+      setShowTableOfContents(false);
       
       // Reset after a short delay
       const timer = setTimeout(() => {
@@ -76,6 +92,13 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
     }
   }, [showThumbnails]);
   
+  // Save table of contents state to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(TOC_STATE_KEY, JSON.stringify(showTableOfContents));
+    }
+  }, [showTableOfContents]);
+  
   // Effect untuk mendeteksi ukuran layar - hanya dijalankan di client
   useEffect(() => {
     // Set isClient ke true untuk menunjukkan kita sekarang di client-side
@@ -92,9 +115,36 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
     // Add event listener
     window.addEventListener('resize', handleResize);
     
+    // Sinkronisasi state sidebar saat remount (refresh)
+    // Untuk menghindari ketidaksesuaian state visual dengan internal
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Jika sidebar localStorage true tetapi sidebar tidak terlihat
+        // (yang mungkin terjadi karena refresh), reset state
+        const thumbnailState = localStorage.getItem(THUMBNAILS_STATE_KEY);
+        const tocState = localStorage.getItem(TOC_STATE_KEY);
+        
+        // Hanya update jika ada ketidaksesuaian
+        if (thumbnailState === 'true' && !document.querySelector('.sidebar-open')) {
+          setShowThumbnails(false);
+          localStorage.setItem(THUMBNAILS_STATE_KEY, 'false');
+        }
+        
+        if (tocState === 'true' && !document.querySelector('.sidebar-open')) {
+          setShowTableOfContents(false);
+          localStorage.setItem(TOC_STATE_KEY, 'false');
+        }
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Jalankan sekali saat mounting untuk refresh case
+    handleVisibilityChange();
+    
     // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
   
@@ -141,11 +191,45 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
 
   // Toggle thumbnails sidebar
   const toggleThumbnails = useCallback(() => {
+    // Close table of contents if opening thumbnails
+    if (!showThumbnails && showTableOfContents) {
+      setShowTableOfContents(false);
+    }
+    
+    // Fix mismatch issue: if sidebar is visually closed but state is true,
+    // set it to false first and then toggle on next click
+    const sidebarElement = document.querySelector('.sidebar-open');
+    if (showThumbnails && !sidebarElement) {
+      setShowThumbnails(false);
+      return;
+    }
+    
     // Only toggle thumbnails if we're not in the middle of a language change
     if (!isLanguageChanging) {
       setShowThumbnails(prev => !prev);
     }
-  }, [isLanguageChanging]);
+  }, [isLanguageChanging, showTableOfContents, showThumbnails]);
+  
+  // Toggle table of contents sidebar
+  const toggleTableOfContents = useCallback(() => {
+    // Close thumbnails if opening table of contents
+    if (!showTableOfContents && showThumbnails) {
+      setShowThumbnails(false);
+    }
+    
+    // Fix mismatch issue: if sidebar is visually closed but state is true,
+    // set it to false first and then toggle on next click
+    const sidebarElement = document.querySelector('.sidebar-open');
+    if (showTableOfContents && !sidebarElement) {
+      setShowTableOfContents(false);
+      return;
+    }
+    
+    // Only toggle if we're not in the middle of a language change
+    if (!isLanguageChanging) {
+      setShowTableOfContents(prev => !prev);
+    }
+  }, [isLanguageChanging, showTableOfContents, showThumbnails]);
 
   // Navigation handlers
   const nextPage = useCallback((e?: React.MouseEvent) => {
@@ -400,9 +484,14 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
         goToHome();
       } else if (e.key === 't' || e.key === 'T') {
         toggleThumbnails();
+      } else if (e.key === 'c' || e.key === 'C') {
+        toggleTableOfContents();
       } else if (e.key === 'Escape') {
         if (showThumbnails) {
           setShowThumbnails(false);
+        }
+        if (showTableOfContents) {
+          setShowTableOfContents(false);
         }
       }
     };
@@ -420,7 +509,7 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
       window.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
-  }, [prevPage, nextPage, handleZoomIn, handleZoomOut, toggleFullscreen, isPanorama, isMultiPage, goToHome, toggleThumbnails, showThumbnails]);
+  }, [prevPage, nextPage, handleZoomIn, handleZoomOut, toggleFullscreen, isPanorama, isMultiPage, goToHome, toggleThumbnails, toggleTableOfContents, showThumbnails, showTableOfContents]);
 
   // Function untuk render halaman
   const renderPages = () => {
@@ -653,8 +742,10 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
         onToggleFullscreen={toggleFullscreen}
         onGoHome={goToHome}
         onToggleThumbnails={toggleThumbnails}
+        onToggleTableOfContents={toggleTableOfContents}
         isFullscreen={isFullscreen}
         showThumbnails={showThumbnails}
+        showTableOfContents={showTableOfContents}
       />
       
       {/* Thumbnails Sidebar - Only render if not in language transition */}
@@ -665,6 +756,15 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
           onPageSelect={goToPage}
           totalPages={totalPages}
           currentPage={currentPage}
+        />
+      )}
+      
+      {/* Table of Contents Sidebar - Only render if not in language transition */}
+      {!isLanguageChanging && (
+        <TableOfContents
+          isOpen={showTableOfContents}
+          onClose={() => setShowTableOfContents(false)}
+          onPageSelect={goToPage}
         />
       )}
     </div>

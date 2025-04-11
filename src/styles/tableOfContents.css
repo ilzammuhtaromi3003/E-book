@@ -1,0 +1,72 @@
+/* TableOfContents animations and styles */
+
+/* Sidebar animations */
+.sidebar-opening {
+    animation: slideIn 0.3s ease forwards;
+  }
+  
+  .sidebar-closing {
+    animation: slideOut 0.3s ease forwards;
+  }
+  
+  .sidebar-open {
+    transform: translateX(0);
+  }
+  
+  .sidebar-closed {
+    transform: translateX(-100%);
+  }
+  
+  @keyframes slideIn {
+    from {
+      transform: translateX(-100%);
+      opacity: 0.5;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideOut {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(-100%);
+      opacity: 0.5;
+    }
+  }
+  
+  /* Dropdown animations */
+  .dropdown-container {
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Item hover effects */
+  .toc-item {
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+  }
+  
+  .toc-item:hover {
+    background-color: #eff6ff;
+    border-left-color: #3b82f6;
+  }
+  
+  .toc-item.active {
+    background-color: #eff6ff;
+    border-left-color: #3b82f6;
+  }
+  
+  /* Chevron animation */
+  .chevron-icon {
+    transition: transform 0.3s ease;
+  }
+  
+  /* Override Bootstrap padding */
+  .no-padding-left {
+    padding-left: 0 !important;
+  }

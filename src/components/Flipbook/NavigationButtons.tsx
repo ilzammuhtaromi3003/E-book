@@ -33,7 +33,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
           opacity: currentPage === 0 ? 0.5 : 1,
           color: '#333',
           transition: 'all 0.2s ease',
-          marginLeft: '-15px'
+          marginLeft: '-60px'
         }}
         onMouseEnter={(e) => {
           if (currentPage !== 0) {
@@ -68,7 +68,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
           opacity: currentPage === totalPages - 1 ? 0.5 : 1,
           color: '#333',
           transition: 'all 0.2s ease',
-          marginRight: '-15px'
+          marginRight: '-60px'
         }}
         onMouseEnter={(e) => {
           if (currentPage !== totalPages - 1) {

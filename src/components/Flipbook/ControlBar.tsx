@@ -4,6 +4,7 @@
 import React from 'react';
 import { ControlBarProps } from './types';
 import { BsGrid3X3Gap } from 'react-icons/bs';
+import { BiBookContent } from 'react-icons/bi';
 import { usePathname } from 'next/navigation';
 import { getTranslation } from '@/utils/translations';
 
@@ -15,8 +16,10 @@ const ControlBar: React.FC<ControlBarProps> = ({
   onToggleFullscreen,
   onGoHome,
   onToggleThumbnails,
+  onToggleTableOfContents,
   isFullscreen,
-  showThumbnails
+  showThumbnails,
+  showTableOfContents
 }) => {
   const pathname = usePathname();
   
@@ -33,6 +36,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
   // Get translated labels
   const homeText = getTranslation('home', currentLanguage);
   const thumbnailsText = getTranslation('thumbnails', currentLanguage);
+  const tocText = getTranslation('tableOfContents', currentLanguage);
   const zoomInText = getTranslation('zoomIn', currentLanguage);
   const zoomOutText = getTranslation('zoomOut', currentLanguage);
   const downloadText = getTranslation('download', currentLanguage);
@@ -115,6 +119,16 @@ const ControlBar: React.FC<ControlBarProps> = ({
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M9 22V12h6v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
+        </button>
+        
+        {/* Table of Contents button */}
+        <button
+          onClick={onToggleTableOfContents}
+          style={showTableOfContents ? activeButtonStyle : buttonStyle}
+          aria-label={tocText}
+          title={tocText}
+        >
+          <BiBookContent size={20} />
         </button>
         
         {/* Thumbnails button */}

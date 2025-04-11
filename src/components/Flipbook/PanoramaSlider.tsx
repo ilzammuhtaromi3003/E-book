@@ -84,7 +84,7 @@ const PanoramaSlider: React.FC<PanoramaSliderProps> = ({
             position: 'absolute',
             bottom: '28px',
             left: `${tooltipPosition.left}px`,
-            background: '#4a89dc',
+            background: '#005fac',
             color: 'white',
             padding: '8px 12px',
             borderRadius: '4px',
@@ -107,7 +107,7 @@ const PanoramaSlider: React.FC<PanoramaSliderProps> = ({
               transform: 'rotate(45deg)',
               width: '10px',
               height: '10px',
-              background: '#4a89dc',
+              background: '#005fac',
             }}
           />
         </div>

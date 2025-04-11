@@ -4,15 +4,17 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Navbar from '../Flipbook/Navbar';
 import Thumbnails from '../Thumbnails';
+import TableOfContents from '../TableOfContents'; // Import komponen TableOfContents
 import VideoButton from '../VideoButton';
 import MobileVideo from '../MobileVideo'; // Import komponen MobileVideo yang sudah diperbaiki
-import { FiZoomIn, FiZoomOut, FiMaximize2, FiMinimize2, FiArrowUp, FiGrid, FiDownload } from 'react-icons/fi';
+import { FiZoomIn, FiZoomOut, FiMaximize2, FiMinimize2, FiArrowUp, FiGrid, FiDownload, FiBook } from 'react-icons/fi';
 import { getTranslation } from '@/utils/translations';
 import { usePathname } from 'next/navigation';
 import './mobile-styles.css';
 
-// Key for thumbnails state in localStorage
+// Keys for localStorage
 const THUMBNAILS_STATE_KEY = 'mobile_flipbook_thumbnails_state';
+const TOC_STATE_KEY = 'mobile_flipbook_toc_state';
 
 interface MobileFlipbookProps {
   lang?: string;
@@ -25,11 +27,11 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const pathname = usePathname();
   
-  // For preventing thumbnails from flashing during language changes
+  // For preventing UI components from flashing during language changes
   const [isLanguageChanging, setIsLanguageChanging] = useState(false);
   const previousLang = useRef(lang);
   
-  // Get current language from pathname - same approach as in Thumbnails component
+  // Get current language from pathname
   const getCurrentLanguage = () => {
     if (pathname.startsWith('/en')) return 'en';
     if (pathname.startsWith('/id')) return 'id';
@@ -49,7 +51,17 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
     return false;
   });
   
-  const [currentPage, setCurrentPage] = useState(0); // Track active page for thumbnails
+  // Initialize table of contents state from localStorage
+  const [showTableOfContents, setShowTableOfContents] = useState<boolean>(() => {
+    // Only run in the client
+    if (typeof window !== 'undefined') {
+      const savedState = localStorage.getItem(TOC_STATE_KEY);
+      return savedState ? JSON.parse(savedState) === true : false;
+    }
+    return false;
+  });
+  
+  const [currentPage, setCurrentPage] = useState(0); // Track active page for UI
   const flipbookContainerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   
@@ -63,11 +75,15 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
     if (previousLang.current !== currentLanguage) {
       setIsLanguageChanging(true);
       
+      // Reset sidebars when language changes to prevent UI bugs
+      setShowThumbnails(false);
+      setShowTableOfContents(false);
+      
       // Reset after a short delay
       const timer = setTimeout(() => {
         setIsLanguageChanging(false);
         previousLang.current = currentLanguage;
-      }, 500); // Delay to allow rendering to complete
+      }, 500);
       
       return () => clearTimeout(timer);
     }
@@ -79,6 +95,45 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
       localStorage.setItem(THUMBNAILS_STATE_KEY, JSON.stringify(showThumbnails));
     }
   }, [showThumbnails]);
+  
+  // Save table of contents state to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(TOC_STATE_KEY, JSON.stringify(showTableOfContents));
+    }
+  }, [showTableOfContents]);
+  
+  // Effect to handle UI synchronization after page refresh
+  useEffect(() => {
+    // Sinkronisasi state sidebar saat remount (refresh)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Jika sidebar localStorage true tetapi sidebar tidak terlihat
+        // (yang mungkin terjadi karena refresh), reset state
+        const thumbnailState = localStorage.getItem(THUMBNAILS_STATE_KEY);
+        const tocState = localStorage.getItem(TOC_STATE_KEY);
+        
+        // Hanya update jika ada ketidaksesuaian
+        if (thumbnailState === 'true' && !document.querySelector('.sidebar-open')) {
+          setShowThumbnails(false);
+          localStorage.setItem(THUMBNAILS_STATE_KEY, 'false');
+        }
+        
+        if (tocState === 'true' && !document.querySelector('.sidebar-open')) {
+          setShowTableOfContents(false);
+          localStorage.setItem(TOC_STATE_KEY, 'false');
+        }
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Jalankan sekali saat mounting untuk refresh case
+    handleVisibilityChange();
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
   
   // Zoom handlers
   const handleZoomIn = useCallback(() => {
@@ -130,11 +185,45 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
   
   // Toggle thumbnails
   const toggleThumbnails = useCallback(() => {
-    // Only toggle thumbnails if we're not in the middle of a language change
+    // Close table of contents if opening thumbnails
+    if (!showThumbnails && showTableOfContents) {
+      setShowTableOfContents(false);
+    }
+    
+    // Fix mismatch issue: if sidebar is visually closed but state is true,
+    // set it to false first and then toggle on next click
+    const sidebarElement = document.querySelector('.sidebar-open');
+    if (showThumbnails && !sidebarElement) {
+      setShowThumbnails(false);
+      return;
+    }
+    
+    // Only toggle if we're not in the middle of a language change
     if (!isLanguageChanging) {
       setShowThumbnails(prev => !prev);
     }
-  }, [isLanguageChanging]);
+  }, [isLanguageChanging, showThumbnails, showTableOfContents]);
+  
+  // Toggle table of contents
+  const toggleTableOfContents = useCallback(() => {
+    // Close thumbnails if opening table of contents
+    if (!showTableOfContents && showThumbnails) {
+      setShowThumbnails(false);
+    }
+    
+    // Fix mismatch issue: if sidebar is visually closed but state is true,
+    // set it to false first and then toggle on next click
+    const sidebarElement = document.querySelector('.sidebar-open');
+    if (showTableOfContents && !sidebarElement) {
+      setShowTableOfContents(false);
+      return;
+    }
+    
+    // Only toggle if we're not in the middle of a language change
+    if (!isLanguageChanging) {
+      setShowTableOfContents(prev => !prev);
+    }
+  }, [isLanguageChanging, showTableOfContents, showThumbnails]);
   
   // Scroll to top
   const scrollToTop = useCallback(() => {
@@ -162,7 +251,7 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
       }
     }
     
-    // Don't close thumbnails after navigation - keep them open
+    // Don't close sidebars after navigation - keep them open for better UX
   }, [scrollToTop]);
   
   // Handler untuk mendeteksi scroll dan menampilkan tombol back-to-top
@@ -171,8 +260,7 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
       if (contentRef.current) {
         setShowBackToTop(contentRef.current.scrollTop > 300);
         
-        // Update current page based on scroll position (optional)
-        // This is a simplified version, you might want to improve it
+        // Update current page based on scroll position
         const scrollTop = contentRef.current.scrollTop;
         const viewportHeight = contentRef.current.clientHeight;
         const pages = document.querySelectorAll('.mobile-page-item, .mobile-panorama-item');
@@ -228,9 +316,14 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
         scrollToTop();
       } else if (e.key === 't' || e.key === 'T') {
         toggleThumbnails();
+      } else if (e.key === 'c' || e.key === 'C') {
+        toggleTableOfContents();
       } else if (e.key === 'Escape') {
         if (showThumbnails) {
           setShowThumbnails(false);
+        }
+        if (showTableOfContents) {
+          setShowTableOfContents(false);
         }
       }
     };
@@ -247,9 +340,9 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
       window.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
-  }, [handleZoomIn, handleZoomOut, toggleFullscreen, scrollToTop, toggleThumbnails, showThumbnails]);
+  }, [handleZoomIn, handleZoomOut, toggleFullscreen, scrollToTop, toggleThumbnails, toggleTableOfContents, showThumbnails, showTableOfContents]);
   
-  // PERBAIKAN: Fungsi untuk mendapatkan path file gambar yang benar
+  // Fungsi untuk mendapatkan path file gambar yang benar
   const getImagePath = (pageNumber: number) => {
     // Cover - halaman 1
     if (pageNumber === 1) {
@@ -295,7 +388,7 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
     
     // Regular pages 1-30
     for (let i = 1; i <= 30; i++) {
-      // PERBAIKAN: Menentukan nomor file gambar yang benar
+      // Menentukan nomor file gambar yang benar
       // Untuk halaman 30 (i=30), kita perlu ambil page_Page_031.jpg
       const fileNumber = i + 1; // Page 1 = file 002, Page 30 = file 031
       
@@ -469,6 +562,14 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
         >
           {isFullscreen ? <FiMinimize2 size={20} /> : <FiMaximize2 size={20} />}
         </button>
+        {/* Table of Contents button - NEW */}
+        <button 
+          className={`mobile-floating-button ${showTableOfContents ? 'active' : ''}`} 
+          onClick={toggleTableOfContents}
+          title={getTranslation('tableOfContents', currentLanguage)}
+        >
+          <FiBook size={20} />
+        </button>
         <button 
           className={`mobile-floating-button ${showThumbnails ? 'active' : ''}`} 
           onClick={toggleThumbnails}
@@ -497,6 +598,15 @@ const MobileFlipbook: React.FC<MobileFlipbookProps> = ({ lang = 'en' }) => {
           onPageSelect={goToPage}
           totalPages={totalPages}
           currentPage={currentPage}
+        />
+      )}
+      
+      {/* Table of Contents - NEW */}
+      {!isLanguageChanging && (
+        <TableOfContents
+          isOpen={showTableOfContents}
+          onClose={() => setShowTableOfContents(false)}
+          onPageSelect={goToPage}
         />
       )}
     </div>

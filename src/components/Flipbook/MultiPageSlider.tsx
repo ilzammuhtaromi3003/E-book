@@ -70,6 +70,37 @@ const MultiPageSlider: React.FC<MultiPageSliderProps> = ({
   // Dapatkan teks tooltip sesuai bahasa
   const tooltipText = getTranslation('dragToRight', lang);
   
+  // Tambahkan style untuk slider thumb color
+  useEffect(() => {
+    // Menambahkan custom CSS untuk mengatur warna buletan slider
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = `
+      .multipage-range-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #005fac;
+        cursor: pointer;
+      }
+      
+      .multipage-range-slider::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #005fac;
+        cursor: pointer;
+      }
+    `;
+    document.head.appendChild(styleElement);
+    
+    // Cleanup saat unmount
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
+  
   return (
     <div 
       className="multipage-slider-container" 
@@ -96,7 +127,7 @@ const MultiPageSlider: React.FC<MultiPageSliderProps> = ({
             position: 'absolute',
             bottom: '28px',
             left: `${tooltipPosition.left}px`,
-            background: '#4a89dc',
+            background: '#005fac',
             color: 'white',
             padding: '8px 12px',
             borderRadius: '4px',
@@ -120,7 +151,7 @@ const MultiPageSlider: React.FC<MultiPageSliderProps> = ({
               transform: 'rotate(45deg)',
               width: '10px',
               height: '10px',
-              background: '#4a89dc',
+              background: '#005fac',
             }}
           />
         </div>
@@ -142,7 +173,7 @@ const MultiPageSlider: React.FC<MultiPageSliderProps> = ({
           height: '6px',
           appearance: 'none',
           borderRadius: '3px',
-          background: '#e2e8f0',
+          background: '#BCBDC1',
           outline: 'none'
         }}
         onClick={handleMouseEvents}

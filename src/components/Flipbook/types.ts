@@ -55,3 +55,25 @@ export interface FlipbookProps {
 export interface CoverProps {
   lang?: string;
 }
+
+export interface ControlBarProps {
+  zoom: number;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onDownload: () => void;
+  onToggleFullscreen: () => void;
+  onGoHome: () => void;
+  onToggleThumbnails: () => void;
+  onToggleTableOfContents: () => void;
+  isFullscreen: boolean;
+  showThumbnails: boolean;
+  showTableOfContents: boolean;
+}
+
+export interface NavigationButtonsProps {
+  currentPage: number;
+  totalPages: number;
+  isPanorama: boolean;
+  onPrev: (e?: React.MouseEvent) => void;
+  onNext: (e?: React.MouseEvent) => void;
+}

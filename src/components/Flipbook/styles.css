@@ -130,11 +130,13 @@
   width: 18px;
   height: 18px;
   border-radius: 50%; 
-  background: #3b82f6;
+  background: #005fac;
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   margin-top: -6px; /* Atur posisi vertikal agar tepat di tengah garis */
+  position: relative;
+  z-index: 10;
 }
 
 /* Styling untuk thumb - Firefox */
@@ -326,7 +328,7 @@
 
 /* Tooltip yang langsung berada pada posisi yang tepat tanpa animasi bergerak */
 .blue-tooltip {
-  background: #4a89dc !important;
+  background: #005fac !important;
   color: white !important;
   font-size: 13px !important;
   letter-spacing: 0.5px !important;
@@ -339,12 +341,6 @@
 @keyframes tooltipFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-/* Styling untuk thumb slider yang lebih akurat */
-.panorama-range-slider::-webkit-slider-thumb {
-  position: relative;
-  z-index: 10;
 }
 
 /* Tambahkan CSS ini ke file styles.css Anda, gantikan CSS thumbnails sebelumnya */
@@ -442,4 +438,3 @@
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #ccc;
 }
-
