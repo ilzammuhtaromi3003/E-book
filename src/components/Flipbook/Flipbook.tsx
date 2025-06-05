@@ -11,6 +11,7 @@ import Navbar from './Navbar';
 import { PanoramaLeftPage, PanoramaRightPage } from './PanoramaPages';
 import PanoramaSlider from './PanoramaSlider';
 import { panoramaState } from './PanoramaState';
+import SplinePage from './SplinePage'; // Import komponen 3D baru
 // Import komponen baru untuk halaman multi-page
 import { MultiPageLeftPage, MultiPageRightPage } from './MultiPagePages';
 import { multiPageState } from './MultiPageState';
@@ -572,6 +573,11 @@ const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
         </div>
       );
     }
+    pages.push(
+      <div key="spline-3d-page" className="page">
+        <SplinePage lang={lang} />
+      </div>
+    );
     
     return pages;
   };

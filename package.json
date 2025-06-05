@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@splinetool/runtime": "^1.10.2",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "next": "15.2.2",

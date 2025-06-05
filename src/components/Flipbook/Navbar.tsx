@@ -160,7 +160,7 @@ const Navbar: React.FC<NavbarProps> = ({ pageDisplay, totalPages, onGoToPage }) 
   const isTablet = windowWidth >= 768 && windowWidth < 1024;
   
   // Adjusted logo size based on screen size
-  const logoHeight = isMobile ? 'h-16' : isTablet ? 'h-14' : 'h-20';
+  const logoHeight = isMobile ? 'h-16' : isTablet ? 'h-14' : 'h-23';
   
   // Adjust title font size for tablet
   const titleFontSize = isTablet ? 'text-sm' : 'text-base';
