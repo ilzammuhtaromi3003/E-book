@@ -29,7 +29,7 @@ interface FlipbookProps {
 }
 
 const Flipbook: React.FC<FlipbookProps> = ({ lang = 'en' }) => {
-  const totalPages = 162; // Total halaman yang sebenarnya
+  const totalPages = 163; // Total halaman yang sebenarnya
   const book = useRef<any>(null);
   const flipbookContainerRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(0);
